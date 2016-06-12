@@ -5,9 +5,13 @@ from configparser import ConfigParser
 
 import hgvs.dataproviders.uta
 
-PKGNAME = 'hgvs_lexicon'
-default_cfg_dir = os.path.join(os.getcwd(), 'etc')
-CFGDIR = os.getenv('%s_CONFIG_DIR' % PKGNAME, default_cfg_dir)
+PKGNAME = 'metavariant'
+
+
+default_config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config')
+
+CFGDIR = os.getenv('METAVARIANT_CONFIG_DIR', default_config_dir)
+
 DEBUG = bool(os.getenv('%s_DEBUG' % PKGNAME, False))
 ENV = os.getenv('%s_ENV' % PKGNAME, 'dev')
 
