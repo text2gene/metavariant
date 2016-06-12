@@ -1,1 +1,1 @@
-0.0.1, 6/11/2016 -- Beginnings of acceptability of variant-lexicon as an Open Source contribution.
+0.0.1, 6/11/2016 -- 'metavariant' begins. First stab at Open Source / pypi acceptability.
