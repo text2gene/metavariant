@@ -1,0 +1,24 @@
+syntax: glob
+
+*.pyc
+*.pyo
+*.swp
+.DS_Store
+*.egg-info
+tmp
+ve/
+ve3k/
+dist/
+*.egg-info
+build/
+sandbox/
+findit/
+.tox/
+.cache/
+__pycache__
+numpy-*
+.eggs/
+.idea/
+*.dump
+*.json
+data/*.txt

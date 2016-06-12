@@ -1,0 +1,1 @@
+0.0.1, 6/11/2016 -- Beginnings of acceptability of variant-lexicon as an Open Source contribution.
