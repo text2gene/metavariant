@@ -23,7 +23,6 @@ setup (
     license = 'Apache 2.0',
     packages = find_packages(),
     cmdclass = {'build_ext': build_ext},
-    package_data={'metavariant': ['config/*.ini']},
     setup_requires = ['setuptools', 'numpy'],
     install_requires = [
         'numpy',

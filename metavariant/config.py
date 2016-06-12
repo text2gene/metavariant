@@ -7,16 +7,13 @@ import hgvs.dataproviders.uta
 
 PKGNAME = 'metavariant'
 
-
-default_config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config')
-
-CFGDIR = os.getenv('METAVARIANT_CONFIG_DIR', default_config_dir)
-
 DEBUG = bool(os.getenv('%s_DEBUG' % PKGNAME, False))
 ENV = os.getenv('%s_ENV' % PKGNAME, 'dev')
 
 UTA_HOST = os.getenv('UTA_HOST', 'default')
-UTA_PORT = os.getenv('UTA_PORT', 'default')
+UTA_PORT = os.getenv('UTA_PORT', 5432)
+UTA_SCHEMA = os.getenv('UTA_SCHEMA', '20150903')
+UTA_TIMEOUT = os.getenv('UTA_TIMEOUT', 3)
 
 ####
 import logging
@@ -30,46 +27,24 @@ else:
 #log.debug('%s config dir: %s' % (PKGNAME, CFGDIR))
 #log.debug('%s env: %s' % (PKGNAME, ENV))
 
-configs = [os.path.join(CFGDIR, x) for x in os.listdir(CFGDIR) if x.find(ENV+'.ini') > -1]
+def get_uta_connection(host=UTA_HOST, port=UTA_PORT, timeout=UTA_TIMEOUT, schema=UTA_SCHEMA, 
+                        username='uta_admin', password='anonymous'):
+    """ Returns an open connection to a UTA host at given coordinates, if possible.
+    
+    If host=='default', returns connection to default UTA server (uta.biocommons.org).
 
-CONFIG = ConfigParser()
-CONFIG.read(configs)
-
-def get_uta_connection(host='default', port='default'):
-    """ Returns an open UTA connection to the first available UTA host, as prioritized
-    in the config file (see uta_* items under the [hgvs] section).
-
-    If no connection can be made, returns None.
-
-    Also sets UTA_HOST and UTA_PORT globals in this file.
-
-    :return: open UTA connection or None if all connections fail
+    :return: open UTA connection
+    :raises: socket, uta, hgvs Exceptions
     """
 
-    global UTA_HOST
-    global UTA_PORT
+    timeout = int(timeout)
+    port = int(port)
 
-    UTA_HOST = host
-    UTA_PORT = port
+    uta_cnxn_tmpl = 'postgresql://{user}:{pwd}@{host}:{port}/uta/{schema}/'
 
-    timeout = int(CONFIG.get('hgvs', 'uta_connection_timeout'))
-    uta_cnxn_tmpl = CONFIG.get('hgvs', 'uta_connection_tmpl')
+    if host == 'default':
+        return hgvs.dataproviders.uta.connect()
 
-    for pair in host_port_pairs:
-        host = pair['host']
-        port = int(pair['port'])
-        if host == 'default':
-            return hgvs.dataproviders.uta.connect()
-        else:
-            try:
-                socket.create_connection((host, port), timeout=timeout)
-                log.info('Connected to UTA host %s on port %i', host, port)
-                UTA_HOST = host
-                UTA_PORT = port
-                return hgvs.dataproviders.uta.connect(uta_cnxn_tmpl.format(host=host), pooling=True)
-            except Exception as error:
-                log.info('Could not connect to UTA host %s on port %i: %r', host, port, error)
-
-    # if we get this far and nothing can be reached, return the biocommons default UTA host
-    return hgvs.dataproviders.uta.connect()
+    socket.create_connection((host, port), timeout=timeout)
+    return hgvs.dataproviders.uta.connect(uta_cnxn_tmpl.format(host=host, port=port, schema=schema, user=username, pwd=password), pooling=True)
 

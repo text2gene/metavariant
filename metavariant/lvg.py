@@ -254,7 +254,7 @@ class VariantLVG(object):
 
 ### API Convenience Functions
 
-Variant = HgvsLVG.parse
+Variant = VariantLVG.parse
 
 
 if __name__=='__main__':
@@ -265,7 +265,7 @@ if __name__=='__main__':
         print('Supply hgvs text as argument to this script.')
         sys.exit()
 
-    hgvs_obj = HgvsLVG(hgvs_text) 
+    hgvs_obj = VariantLVG(hgvs_text) 
 
     print(hgvs_obj)
 
