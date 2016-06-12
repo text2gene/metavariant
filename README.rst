@@ -1,5 +1,5 @@
 ******************************************************
-Variant-Lexicon
+MetaVariant
 ******************************************************
 
 Python toolkit for parsing HGVS strings describing genetic variants (mutations)
@@ -90,4 +90,3 @@ in that order.
 
 naomi@nthmost.com
 2016 and onwards
-
