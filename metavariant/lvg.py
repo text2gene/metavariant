@@ -256,25 +256,3 @@ class VariantLVG(object):
 
 Variant = VariantLVG.parse
 
-
-if __name__=='__main__':
-    import sys
-    try:
-        hgvs_text = sys.argv[1]
-    except IndexError:
-        print('Supply hgvs text as argument to this script.')
-        sys.exit()
-
-    hgvs_obj = VariantLVG(hgvs_text) 
-
-    print(hgvs_obj)
-
-    print()
-    print(HgvsComponents(hgvs_obj.seqvar))
-    print()
-
-    for vartype in list(hgvs_obj.variants.keys()):
-        print(hgvs_obj.variants[vartype])
-
-    print()
-    print(hgvs_obj.gene_name)

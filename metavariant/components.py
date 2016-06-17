@@ -37,19 +37,31 @@ official_to_slang_map = {'>': ['->', '-->', '/'],
                         }
 
 class VariantComponents(object):
-
     """
-    #######################################################################
-    # Mutation2Pubtator SeqTypes --> the higher count SeqTypes are higher priority.
-    # Note that many SeqType are null, and therefore need to be implied!
-    # Amino Acids List
-    # List of the 20 protein (amino acids)
-    # http://www.cryst.bbk.ac.uk/education/AminoAcid/the_twenty.html
-    # If SeqType is none and REF in [u] or ALT in [u] --> then RNA
-    # If SeqType is none and REF in [AminoAcidsList] and ALT in [AminoAcidsList] --> then Protein
-    # If SeqType is none and REF in [a,c,t,g] and ALT in [a,c,t,g] --> then DNA or RNA
-    #
-    # JIRA: https://text2gene.atlassian.net/browse/T2G-3
+    VariantComponents
+
+    Takes an hgvs.SequenceVariant object and parses it into components (position, reference,
+    alternate, edit type, and sequence type), allowing further lexical manipulation for the
+    purposes of generating pubmed evidence source "slang".
+
+    Attributes:
+
+        seqtype: the sequence type of this seqvar (one of 'c', 'g', 'g', 'n')
+        edittype: the type of mutation represented by this variant ('SUB', 'DEL', 'FS', etc)
+        pos: position of the edit
+        ref: reference sequence at given position
+        alt: alternate (or "wildtype") at given position
+
+    Properties:
+
+        posedit: returns the HGVS "official" construction of this seqvar's position + edit information.
+        posedit_slang: returns a list of algorithmically generated "slang" for given seqvar's posedit.
+
+    Usage:
+
+        comp = VariantComponents(seqvar)
+        print(comp.posedit)
+        print(comp.posedit_slang)
     """
 
     def __init__(self, seqvar=None, **kwargs):
@@ -75,6 +87,10 @@ class VariantComponents(object):
             self.seqtype = self._infer_seqtype()
 
     def _infer_seqtype(self):
+        # If SeqType is none and REF in [u] or ALT in [u] --> then RNA
+        # If SeqType is none and REF in [AminoAcidsList] and ALT in [AminoAcidsList] --> then Protein
+        # If SeqType is none and REF in [a,c,t,g] and ALT in [a,c,t,g] --> then DNA or RNA
+        
         refalt = self.ref.upper() + self.alt.upper()
 
         if 'u' in refalt:
@@ -117,7 +133,7 @@ class VariantComponents(object):
             if not seqvar.posedit.edit.type == 'dup':
                 log.warn('SequenceVariant %s: %s', seqvar, error)
 
-        # if alt is a '*' it represents a Ter (STOP) sequence, which PubTator represents as an 'X'.
+        # Termination (STOP) codon: normalize '*' to 'X'
         if alt == '*':
             alt = 'X'
 
@@ -144,6 +160,7 @@ class VariantComponents(object):
                  'EditType': self.edittype,
                  'Pos': self.pos,
                  }
+
         if self.edittype == 'FS':
             outd['FS_Pos'] = self.fs_pos
 
@@ -232,3 +249,4 @@ class VariantComponents(object):
 
     def __repr__(self):
         return '%r' % self.__dict__
+

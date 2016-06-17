@@ -1,8 +1,5 @@
 from __future__ import absolute_import, unicode_literals
 
-class IncompleteEdit(Exception):
-    pass
-
 class RejectedSeqVar(Exception):
     """ Indicates a sequence variant that cannot be considered functionally
     useful for the purposes of lookup in databases (pubtator, etc).
@@ -20,3 +17,4 @@ class CriticalHgvsError(Exception):
         e.g. "HGVSParseError(u'NM_004628.4:c.621_622ins83: char 24: Syntax error',)"
     """
     pass
+
