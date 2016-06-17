@@ -104,6 +104,8 @@ class VariantComponents(object):
         if not self.seqtype:
             self.seqtype = self._infer_seqtype()
 
+        #TODO: (attempt to) construct a seqvar if instantiated from kwargs.
+
     def _infer_seqtype(self):
         # If SeqType is none and REF in [u] or ALT in [u] --> then RNA
         # If SeqType is none and REF in [AminoAcidsList] and ALT in [AminoAcidsList] --> then Protein
