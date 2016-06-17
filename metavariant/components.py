@@ -7,6 +7,14 @@ from .exceptions import RejectedSeqVar
 
 log = logging.getLogger(PKGNAME)
 
+def lowercase_all_the_keys(some_dict):
+    """ lowercases all the keys in the supplied dictionary.
+
+    :param: dict
+    :return: dict
+    """
+    return dict((key.lower(), val) for key, val in some_dict.iteritems())
+
 amino_acid_map = { 'Ala': 'A',
                    'Arg': 'R',
                    'Asn': 'N',
@@ -44,6 +52,12 @@ class VariantComponents(object):
     alternate, edit type, and sequence type), allowing further lexical manipulation for the
     purposes of generating pubmed evidence source "slang".
 
+    Can also be instantiated from keyword components, helping organize this information into 
+    an object, which will also perform seqtype inference (if necessary) and official posedit
+    syntax construction.
+
+    Note: FrameShift (FS) and Duplication (DUP) are currently not well supported.
+
     Attributes:
 
         seqtype: the sequence type of this seqvar (one of 'c', 'g', 'g', 'n')
@@ -59,25 +73,29 @@ class VariantComponents(object):
 
     Usage:
 
+        # from SequenceVariant object:
         comp = VariantComponents(seqvar)
-        print(comp.posedit)
-        print(comp.posedit_slang)
+
+        # from individual components:
+        comp = VariantComponents(seqtype='c', edittype='SUB', pos='128', ref='C', alt='T')
     """
 
     def __init__(self, seqvar=None, **kwargs):
+        kwargs = lowercase_all_the_keys(kwargs)
+
         self.seqvar = seqvar
         if self.seqvar:
             self.seqtype, self.edittype, self.ref, self.pos, self.alt = self.parse(seqvar)
             #TODO: get FS_Pos and DupX out of seqvar when applicable.
         else:
             # names of keywords match capitalization used in MySQL m2p_* tables in pubtatordb
-            self.seqtype = kwargs.get('SeqType', '').strip()
-            self.edittype = kwargs.get('EditType', '').strip()
-            self.ref = kwargs.get('Ref', '').strip()
-            self.pos = kwargs.get('Pos', '').strip()
-            self.alt = kwargs.get('Alt', '').strip()
-            self.fs_pos = kwargs.get('FS_Pos', '').strip()
-            self.dupx = kwargs.get('DupX', '').strip()
+            self.seqtype = kwargs.get('seqtype', '').strip()
+            self.edittype = kwargs.get('edittype', '').strip()
+            self.ref = kwargs.get('ref', '').strip()
+            self.pos = kwargs.get('pos', '').strip()
+            self.alt = kwargs.get('alt', '').strip()
+            self.fs_pos = kwargs.get('fs_pos', '').strip()
+            self.dupx = kwargs.get('dupx', '').strip()
 
         if self.edittype.upper() == 'DELINS':
             # normalize DELINS to INDEL (synonymous)

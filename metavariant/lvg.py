@@ -1,5 +1,6 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
+import re
 import logging
 
 import hgvs.parser
@@ -16,6 +17,9 @@ log = logging.getLogger(PKGNAME)
 uta = get_uta_connection()
 mapper = hgvs.variantmapper.EasyVariantMapper(uta)
 hgvs_parser = hgvs.parser.Parser()
+
+# regular expressions
+re_hgvs_with_gene_name = re.compile('^\w+\.\d+(?P<gene_name>\(\w+\)):')
 
 
 def _seqvar_map_func(in_type, out_type):
@@ -112,7 +116,7 @@ class VariantLVG(object):
         try:
             self.variants[self.seqvar.type][str(self.seqvar)] = self.seqvar
         except KeyError:
-            raise CriticalHgvsError('SequenceVariant type "%s" is not supported (input was %s).' % (self.seqvar.type, self.seqvar))
+            log.warn('Ignoring supplied SequenceVariant of type "%s" (not supported) -- (input was %s).' % (self.seqvar.type, self.seqvar))
 
         if self.variants['c']:
             # attempt to derive all 4 types of SequenceVariants from all available 'c'.
@@ -190,10 +194,19 @@ class VariantLVG(object):
         """
         if type(hgvs_text_or_seqvar) == hgvs.variant.SequenceVariant:
             return hgvs_text_or_seqvar
+
+        # see if the gene name is embedded in the string, e.g. NM_003331.4(TYK2):c.3318_3319insC
+        match = re_hgvs_with_gene_name.match(hgvs_text_or_seqvar) 
+        if match:
+            gene_str = match.groupdict()['gene_name']
+            hgvs_text = hgvs_text_or_seqvar.replace(gene_str, '')
+        else:
+            hgvs_text = hgvs_text_or_seqvar
+
         try:
-            return hgvs_parser.parse_hgvs_variant(str(hgvs_text_or_seqvar))
+            return hgvs_parser.parse_hgvs_variant(str(hgvs_text))
         except HGVSParseError as error:
-            log.info('Cannot create SequenceVariant from hgvs_text "%s": %r', hgvs_text_or_seqvar, error)
+            log.info('Cannot create SequenceVariant from hgvs_text "%s": %r', hgvs_text, error)
             # Examples:
             #  HGVSParseError(u'NP_068780.2:p.Tyr?His: char 17: expected a digit',)
             #  HGVSParseError(u'NM_004628.4:c.621_622ins83: char 24: Syntax error',)
