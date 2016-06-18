@@ -10,6 +10,7 @@ from hgvs.exceptions import HGVSDataNotAvailableError, HGVSParseError
 from .components import VariantComponents
 from .config import get_uta_connection, PKGNAME
 from .exceptions import CriticalHgvsError
+from .utils import strip_gene_name_from_hgvs_text
 
 log = logging.getLogger(PKGNAME)
 
@@ -17,9 +18,6 @@ log = logging.getLogger(PKGNAME)
 uta = get_uta_connection()
 mapper = hgvs.variantmapper.EasyVariantMapper(uta)
 hgvs_parser = hgvs.parser.Parser()
-
-# regular expressions
-re_hgvs_with_gene_name = re.compile('^\w+\.\d+(?P<gene_name>\(\w+\)):')
 
 
 def _seqvar_map_func(in_type, out_type):
@@ -82,11 +80,12 @@ def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None):
 
 class VariantLVG(object):
 
+    #TODO: remove these two class variables (when ready)...
     VERSION = '0.0.2'
     LVG_MODE = 'lvg'
 
     def __init__(self, hgvs_text_or_seqvar, **kwargs):
-        self.hgvs_text = str(hgvs_text_or_seqvar)
+        self.hgvs_text = strip_gene_name_from_hgvs_text('%s' % hgvs_text_or_seqvar)
 
         # use the hgvs library to get us some info about this HGVS string.
         self.seqvar = self.parse(hgvs_text_or_seqvar)
@@ -195,13 +194,7 @@ class VariantLVG(object):
         if type(hgvs_text_or_seqvar) == hgvs.variant.SequenceVariant:
             return hgvs_text_or_seqvar
 
-        # see if the gene name is embedded in the string, e.g. NM_003331.4(TYK2):c.3318_3319insC
-        match = re_hgvs_with_gene_name.match(hgvs_text_or_seqvar) 
-        if match:
-            gene_str = match.groupdict()['gene_name']
-            hgvs_text = hgvs_text_or_seqvar.replace(gene_str, '')
-        else:
-            hgvs_text = hgvs_text_or_seqvar
+        hgvs_text = strip_gene_name_from_hgvs_text(hgvs_text_or_seqvar)
 
         try:
             return hgvs_parser.parse_hgvs_variant(str(hgvs_text))

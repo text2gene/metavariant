@@ -1,2 +1,3 @@
 0.0.1, 6/11/2016 -- 'metavariant' begins. First stab at Open Source / pypi acceptability.
-0.0.2, 6/17/2017 -- Allow HGVS strings containing gene names to be supplied to Variant and VariantLVG.
+0.0.2, 6/17/2016 -- Allow HGVS strings containing gene names to be supplied to Variant and VariantLVG.
+0.0.2.1, 6/17/2016 -- made strip_gene_name_from_hgvs_text a standalone function.
