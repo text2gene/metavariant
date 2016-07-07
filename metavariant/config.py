@@ -12,7 +12,7 @@ ENV = os.getenv('%s_ENV' % PKGNAME, 'dev')
 
 UTA_HOST = os.getenv('UTA_HOST', 'default')
 UTA_PORT = os.getenv('UTA_PORT', 5432)
-UTA_SCHEMA = os.getenv('UTA_SCHEMA', '20150903')
+UTA_SCHEMA = os.getenv('UTA_SCHEMA', 'uta_20150903')
 UTA_TIMEOUT = os.getenv('UTA_TIMEOUT', 3)
 
 ####

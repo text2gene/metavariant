@@ -140,8 +140,8 @@ A VariantComponents object provides access to the following attributes and prope
    seqtype: the sequence type of this seqvar (one of 'c', 'g', 'g', 'n')
    edittype: the type of mutation represented by this variant ('SUB', 'DEL', 'FS', etc)
    pos: position of the edit
-   ref: reference sequence at given position
-   alt: alternate (or "wildtype") at given position
+   ref: reference sequence at given position (aka "wildtype")
+   alt: alternate (or "mutant") at given position
 
    posedit: returns the HGVS "official" construction of this seqvar's position + edit information.
    posedit_slang: returns a list of algorithmically generated "slang" for given seqvar's posedit.
