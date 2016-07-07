@@ -174,6 +174,7 @@ happens at the environment variable level.  The relevant variables::
     UTA_USER (default: 'uta_admin')
     UTA_PASS (default: 'uta_admin')
     UTA_SCHEMA (default: 'uta_20150903')
+    UTA_TIMEOUT (default: 3) -- how long to wait before giving up on a connection
 
 When you set up your own postgres server for the UTA database and you connect on the same server, the only
 environment variable you probably need to change is `UTA_HOST` (set it to "localhost").
