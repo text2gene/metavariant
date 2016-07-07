@@ -157,6 +157,30 @@ All exceptions can be found and imported from metavariant.exceptions.
 `RejectedSeqVar`: raised inside VariantComponents when input sequence components fail certain tests of completeness. For example, a protein seqvar will throw this Exception if the protein effect string is only a "?" (i.e. unknown protein effect).  A "SUB" (substitution) will fail the completeness test if an "alt" is not provided in the instantiated components.
 
 
+Setting UTA Server
+------------------
+
+When you find yourself outgrowing the public UTA server, you may want to install your own UTA server. 
+The instructions can be found on the [biocommons/uta repository README](https://bitbucket.org/biocommons/uta). Both "installing from database dumps" 
+and installing from docker have been tested working with metavariant.
+
+*How to Set UTA Host Variables*
+
+metavariant connects to a UTA server as soon as it is imported, so reconfiguring which UTA server is used
+happens at the environment variable level.  The relevant variables::
+
+    UTA_HOST (default: 'default')
+    UTA_PORT (default: 5432)
+    UTA_USER (default: 'uta_admin')
+    UTA_PASS (default: 'uta_admin')
+    UTA_SCHEMA (default: 'uta_20150903')
+
+When you set up your own postgres server for the UTA database and you connect on the same server, the only
+environment variable you probably need to change is `UTA_HOST` (set it to "localhost").
+
+You may have to do more postgres administration to get your preferred configuration going, which is outside the scope of this README.
+
+
 Support and Maintenance
 -----------------------
 
@@ -169,6 +193,6 @@ You are free to modify it for commercial and non-commercial uses; just don't try
 Contributions, extensions, bug reports, suggestions, and swear words all happily accepted, 
 in that order.
 
-naomi@nthmost.com
+naomi@text2gene.com
 2016 and onwards
 
