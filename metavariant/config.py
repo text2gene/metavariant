@@ -14,6 +14,8 @@ UTA_HOST = os.getenv('UTA_HOST', 'default')
 UTA_PORT = os.getenv('UTA_PORT', 5432)
 UTA_SCHEMA = os.getenv('UTA_SCHEMA', 'uta_20150903')
 UTA_TIMEOUT = os.getenv('UTA_TIMEOUT', 3)
+UTA_USER = os.getenv('UTA_USER', 'uta_admin')
+UTA_PASS = os.getenv('UTA_PASS', 'uta_admin')
 
 ####
 import logging
@@ -28,7 +30,7 @@ else:
 #log.debug('%s env: %s' % (PKGNAME, ENV))
 
 def get_uta_connection(host=UTA_HOST, port=UTA_PORT, timeout=UTA_TIMEOUT, schema=UTA_SCHEMA, 
-                        username='uta_admin', password='anonymous'):
+                        username=UTA_USER, password=UTA_PASS):
     """ Returns an open connection to a UTA host at given coordinates, if possible.
     
     If host=='default', returns connection to default UTA server (uta.biocommons.org).
