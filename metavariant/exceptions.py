@@ -1,6 +1,11 @@
 from __future__ import absolute_import, unicode_literals
 
-class RejectedSeqVar(Exception):
+
+class MetaVariantError(Exception):
+    """ Generic exception class from which all metavariant exceptions are subclassed. """
+
+
+class RejectedSeqVar(MetaVariantError):
     """ Indicates a sequence variant that cannot be considered functionally
     useful for the purposes of lookup in databases (pubtator, etc).
 
@@ -8,7 +13,8 @@ class RejectedSeqVar(Exception):
     """
     pass
 
-class CriticalHgvsError(Exception):
+
+class CriticalHgvsError(MetaVariantError):
     """ Raised when a SequenceVariant cannot be parsed from the input hgvs_text; should be used only in cases
         where failure to create a SequenceVariant means a complete (critical) failure to proceed with LVG.
 
@@ -17,4 +23,12 @@ class CriticalHgvsError(Exception):
         e.g. "HGVSParseError(u'NM_004628.4:c.621_622ins83: char 24: Syntax error',)"
     """
     pass
+
+
+class LOVDRemoteError(MetaVariantError):
+    """ Raised when response from LOVD contains a not-ok status code.
+    Error message should contain status code. 
+    """
+    pass
+
 
