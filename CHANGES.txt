@@ -2,4 +2,4 @@
 0.0.2, 6/17/2016 -- Allow HGVS strings containing gene names to be supplied to Variant and VariantLVG.
 0.0.2.1, 6/17/2016 -- made strip_gene_name_from_hgvs_text a standalone function.
 0.0.2.4, 7/6/2016 -- tweaks allowing more environment-based configuration of UTA connection.
-0.0.3, 7/24/2016 -- LOVDVariantsForGene debut (lovd.py added). No backing cache for query responses yet.
+0.0.3, 7/24/2016 -- LOVDVariantsForGene and LOVDAnnotatedVariants debut (lovd.py added).
