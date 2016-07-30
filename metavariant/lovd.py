@@ -50,6 +50,16 @@ class LOVDVariant(object):
             if transcript:
                 self.hgvs_text = construct_hgvs_name(transcript, self.cDNA)
 
+    def load_from_api(self):
+        """ Loads information from LOVD variant API, which does not return certain items like
+        dbSNP number or references."""
+        pass
+
+    def load_from_page(self):
+        """ Loads information from LOVD variant page, which is slower than an API call (and will
+        probably break more readily over time), but includes references and other useful info."""
+        pass
+
     def to_dict(self):
         return self.__dict__    
 
@@ -82,6 +92,10 @@ def _get_text_from_link_in_td(td_elem):
         return ''
 
 
+def _get_lovd_link_from_td(td_elem):
+    return td_elem.find('a').get('href')
+
+
 def _get_vdict_from_tr(tr_elem, has_haplotype=False):
     tds = tr_elem.getchildren()
 
@@ -92,6 +106,7 @@ def _get_vdict_from_tr(tr_elem, has_haplotype=False):
         return { 'effect': tds[0].text,
                  'exon': tds[1].text,
                  'cDNA': _get_text_from_link_in_td(tds[2]), 
+                 'lovd_link': _get_lovd_link_from_td(tds[2]),
                  'mRNA': tds[3].text,
                  'protein': tds[4].text,
                  'haplotype': tds[5].text,
@@ -106,6 +121,7 @@ def _get_vdict_from_tr(tr_elem, has_haplotype=False):
         return { 'effect': tds[0].text,
                  'exon': tds[1].text,
                  'cDNA': _get_text_from_link_in_td(tds[3]), 
+                 'lovd_link': _get_lovd_link_from_td(tds[2]),
                  'mRNA': tds[4].text,
                  'protein': tds[5].text,
                  'gDNA': _get_text_from_link_in_td(tds[6]),
