@@ -27,7 +27,7 @@ def construct_hgvs_name(transcript, coding_sequence):
 
 class LOVDVariant(object):
 
-    def __init__(self, vdict=None, table_row=None, transcript=None):
+    def __init__(self, vdict=None, table_row=None, transcript=None, has_haplotype=False):
 
         self.gene_name = None
         self.title = None
@@ -46,7 +46,7 @@ class LOVDVariant(object):
         if vdict is not None:
             self.__dict__.update(vdict)
         elif table_row is not None:
-            self.__dict__.update(_get_vdict_from_tr(table_row))
+            self.__dict__.update(_get_vdict_from_tr(table_row, has_haplotype))
             if transcript:
                 self.hgvs_text = construct_hgvs_name(transcript, self.cDNA)
 
@@ -82,23 +82,41 @@ def _get_text_from_link_in_td(td_elem):
         return ''
 
 
-def _get_vdict_from_tr(tr_elem):
+def _get_vdict_from_tr(tr_elem, has_haplotype=False):
     tds = tr_elem.getchildren()
-   
-    return { 'allele': tds[6].text,
-             'cDNA': _get_text_from_link_in_td(tds[2]), 
-             'exon': tds[1].text,
-             'effect': tds[0].text,
-             'frequency': tds[16].text,
-             'gDNA': _get_text_from_link_in_td(tds[7]),
-             'haplotype': tds[5].text,
-             'DBID': tds[10].text,
-             'protein': tds[4].text,
-             'references': _get_references_from_td(tds[12]),
-             'remarks': tds[25].text,
-             'mRNA': tds[3].text
-            }
 
+    # there are 2 different styles of page. one has Haplotype at td-5, the other has no Haplotype column.
+    # we have to parse these out differently.
+
+    if has_haplotype:
+        return { 'effect': tds[0].text,
+                 'exon': tds[1].text,
+                 'cDNA': _get_text_from_link_in_td(tds[2]), 
+                 'mRNA': tds[3].text,
+                 'protein': tds[4].text,
+                 'haplotype': tds[5].text,
+                 'allele': tds[6].text,
+                 'gDNA': _get_text_from_link_in_td(tds[7]),
+                 'DBID': tds[10].text,
+                 'references': _get_references_from_td(tds[12]),
+                 'frequency': tds[16].text,
+                 'remarks': tds[25].text,
+                }
+    else:
+        return { 'effect': tds[0].text,
+                 'exon': tds[1].text,
+                 'cDNA': _get_text_from_link_in_td(tds[3]), 
+                 'mRNA': tds[4].text,
+                 'protein': tds[5].text,
+                 'gDNA': _get_text_from_link_in_td(tds[6]),
+                 'DBID': tds[9].text,
+                 'remarks': tds[10].text,
+                 'references': _get_references_from_td(tds[11]),
+                 'dbSNP': tds[11].text,
+                 'genetic_origin': tds[12].text,
+                 'frequency': tds[14].text,
+                }
+         
 
 def _parse_content_text(text):
     """ <content type="text">
@@ -230,7 +248,15 @@ def get_variants_with_annotations_for_gene_name(symbol):
     else:
         tran = None 
 
-    return [LOVDVariant(table_row=tr, transcript=tran) for tr in table.findall('tr')]
+    # determine which type of table this is by what the headers look like
+    has_haplotype = False
+    ths = table.find('thead').getchildren()[0].findall('th')
+    for th in ths:
+        title = th.get('title')
+        if title and 'haplotype' in th.get('title').lower():
+            has_haplotype = True
+    print(has_haplotype)
+    return [LOVDVariant(table_row=tr, transcript=tran, has_haplotype=has_haplotype) for tr in table.findall('tr')]
 
 
 LOVDVariantsForGene = get_variants_for_gene_name
