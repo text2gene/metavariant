@@ -15,7 +15,7 @@ re_transcript = re.compile('\/variants\/\w+\/(?P<transcript>NM_\d+.\d+)\?')
 LOVD_DEFAULT_DOMAIN = 'databases.lovd.nl'
 
 LOVD_API_GENE_VARIANTS_URL = 'http://{domain}/shared/api/rest.php/variants/{symbol}'
-LOVD_PAGE_GENE_VARIANTS_URL = 'http://databases.lovd.nl/shared/view/{symbol}#page_size=1000&page=1'
+LOVD_PAGE_GENE_VARIANTS_URL = 'http://{domain}/shared/view/{symbol}#page_size=1000&page=1'
 
 re_pubmed_id = re.compile('pubmed\/(?P<pmid>\d+)')
 re_doi = re.compile(r'(10[.][0-9]{2,}(?:[.][0-9]+)*/(?:(?!["&\'])\S)+)')
@@ -195,7 +195,7 @@ def _parse_lovd_variants_by_gene_name_response(xml_blob):
     return out
 
 
-def _query_lovd_for_variants_by_gene_name(symbol, domain=LOVD_DEFAULT_DOMAIN):
+def _query_lovd_api_for_variants_by_gene_name(symbol, domain):
     """ Submits query to lovd.nl for specified gene name (Symbol), retrieving the API
     content for the given gene.
 
@@ -209,10 +209,10 @@ def _query_lovd_for_variants_by_gene_name(symbol, domain=LOVD_DEFAULT_DOMAIN):
     if response.ok:
         return response.content
     else:
-        raise LOVDRemoteError('lovd.nl returned HTTP %r' % response.status)
+        raise LOVDRemoteError('lovd.nl returned HTTP %r' % response.status_code)
 
 
-def _load_lovd_variant_page_by_gene_name(symbol, domain=LOVD_DEFAULT_DOMAIN):
+def _load_lovd_variant_page_by_gene_name(symbol, domain):
     """ Submits query to lovd.nl for specified gene name (Symbol), retrieving the WEBSITE
     content for the given gene.
 
@@ -225,10 +225,10 @@ def _load_lovd_variant_page_by_gene_name(symbol, domain=LOVD_DEFAULT_DOMAIN):
     if response.ok:
         return response.content
     else:
-        raise LOVDRemoteError('lovd.nl returned HTTP %r' % response.status)
+        raise LOVDRemoteError('lovd.nl returned HTTP %r' % response.status_code)
 
 
-def get_variants_for_gene_name(symbol):
+def get_variants_for_gene_name(symbol, domain=LOVD_DEFAULT_DOMAIN):
     """ Given HUGO gene name symbol (e.g. "ACVRL1", "FANCA"), return the set of unique variants 
         found on LOVD.
     
@@ -237,13 +237,13 @@ def get_variants_for_gene_name(symbol):
     :param symbol: (str)
     :return: variants (list) 
     """
-    api_response = _query_lovd_for_variants_by_gene_name(symbol)
+    api_response = _query_lovd_api_for_variants_by_gene_name(symbol, domain)
     vdicts = _parse_lovd_variants_by_gene_name_response(api_response)
     lovd_variants = set([vdict['hgvs_text'] for vdict in vdicts])
     return lovd_variants
 
 
-def get_variants_with_annotations_for_gene_name(symbol):
+def get_variants_with_annotations_for_gene_name(symbol, domain=LOVD_DEFAULT_DOMAIN):
     """ Given HUGO gene name symbol (e.g. "ACVRL1", "FANCA"), return the set of unique variants 
         found on LOVD paired with references (citations, annotations, etc).
     
@@ -252,7 +252,7 @@ def get_variants_with_annotations_for_gene_name(symbol):
     :param symbol: (str)
     :return: variants (list) 
     """
-    content = _load_lovd_variant_page_by_gene_name(symbol)
+    content = _load_lovd_variant_page_by_gene_name(symbol, domain)
     htm = etree.fromstring(content, parser=HTMLParser()).find('body')
     try:
         table = htm.cssselect('#viewlistTable_CustomVL_VIEW_%s' % symbol)[0]
@@ -271,7 +271,6 @@ def get_variants_with_annotations_for_gene_name(symbol):
         title = th.get('title')
         if title and 'haplotype' in th.get('title').lower():
             has_haplotype = True
-    print(has_haplotype)
     return [LOVDVariant(table_row=tr, transcript=tran, has_haplotype=has_haplotype) for tr in table.findall('tr')]
 
 
