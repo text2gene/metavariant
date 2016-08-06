@@ -235,6 +235,7 @@ def get_variants_for_gene_name(symbol, domain=LOVD_DEFAULT_DOMAIN):
     NOTE: Not all genes can be found on lovd.nl -- see http://databases.lovd.nl/shared/genes
 
     :param symbol: (str)
+    :param domain: (str) [default: lovd.nl]
     :return: variants (list) 
     """
     api_response = _query_lovd_api_for_variants_by_gene_name(symbol, domain)
@@ -250,6 +251,7 @@ def get_variants_with_annotations_for_gene_name(symbol, domain=LOVD_DEFAULT_DOMA
     NOTE: Not all genes can be found on lovd.nl -- see http://databases.lovd.nl/shared/genes
 
     :param symbol: (str)
+    :param domain: (str) [default: lovd.nl]
     :return: variants (list) 
     """
     content = _load_lovd_variant_page_by_gene_name(symbol, domain)
