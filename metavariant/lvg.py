@@ -25,6 +25,11 @@ def _seqvar_map_func(in_type, out_type):
     return getattr(mapper, func_name)
 
 
+def seqvar_length(seqvar):
+    comp = VariantComponents(seqvar)
+    return len(comp.posedit)
+
+
 def variant_to_gene_name(seqvar):
     """
     Get HUGO Gene Name (Symbol) for given sequence variant object.
@@ -48,7 +53,22 @@ def variant_to_gene_name(seqvar):
         return None
 
 
-def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None):
+def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None, maxlen=None):
+    """ Using UTA, translate the input seqvar (SequenceVariant object) into 
+    the desired new_type of sequence variant.  If the base_type is 'g', a transcript
+    label will be required.
+
+    (Optional) Specify `maxlen` (int) characters to restrict resultant SequenceVariant 
+    to a reasonable size. Returns None if str(SequenceVariant) > maxlen.
+
+    :param seqvar: (SequenceVariant)
+    :param base_type: (str) single-letter abbrev for variant type to map FROM
+    :param new_type: (str) single-letter abbrev for variant type to map TO
+    :param transcript: (str) [default: None]
+    :param maxlen: (int) max length of resultant str(SequenceVariant) to allow
+    :return: SequenceVariant or None
+    """
+
     if base_type == new_type:
         return None
 
@@ -59,13 +79,16 @@ def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None):
         return None
 
     map_seqvar = _seqvar_map_func(base_type, new_type)
+
+    result_seqvar = None
+
     try:
         if base_type == 'g':
             if transcript:
-                return map_seqvar(seqvar, transcript)
+                result_seqvar = map_seqvar(seqvar, transcript)
             else:
                 return None
-        return map_seqvar(seqvar)
+        result_seqvar = map_seqvar(seqvar)
     except NotImplementedError:
         log.debug('Cannot map %s to %s: hgvs raised NotImplementedError', seqvar, new_type)
         return None
@@ -77,6 +100,12 @@ def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None):
         log.debug('Cannot map %s to %s: unexpected Exception (%r)', seqvar, new_type, error)
         return None
 
+    # if sequence variant maps out to longer than maxlen chars, return None
+    if maxlen and seqvar_length(result_seqvar) > maxlen:
+        return None
+
+    return result_seqvar
+
 
 class VariantLVG(object):
 
@@ -85,7 +114,27 @@ class VariantLVG(object):
     LVG_MODE = 'lvg'
 
     def __init__(self, hgvs_text_or_seqvar, **kwargs):
+        """ Creates a VariantLVG object given an HGVS string or SequenceVariant object.
+
+        Enrichment:
+
+            VariantLVG provides for "enrichment" of lexical variant generation by allowing
+            more transcripts and variations to be supplied at instantiation. Just use the 
+            appropriate keyword for the type of information, remembering that the "enrichment"
+            keyword arguments are all lists.
+
+        Keywords:
+            hgvs_c (list): see Enrichment above
+            hgvs_g (list): ""
+            hgvs_n (list): ""
+            hgvs_p (list): ""
+            transcripts (list): list of strings describing valid alternative transcripts for seqvar
+            seqvar_max_len (int): restrict posedit lengths to this number of characters (or fewer).    
+        """
+
         self.hgvs_text = strip_gene_name_from_hgvs_text('%s' % hgvs_text_or_seqvar)
+
+        seqvar_max_len = kwargs.get('seqvar_max_len', None)
 
         # use the hgvs library to get us some info about this HGVS string.
         self.seqvar = self.parse(hgvs_text_or_seqvar)
@@ -121,7 +170,7 @@ class VariantLVG(object):
             # attempt to derive all 4 types of SequenceVariants from all available 'c'.
             for var_c in list(self.variants['c'].values()):
                 for this_type, value in list(self.variants.items()):
-                    new_seqvar = _seqvar_to_seqvar(var_c, 'c', this_type)
+                    new_seqvar = _seqvar_to_seqvar(var_c, 'c', this_type, maxlen=seqvar_max_len)
                     if new_seqvar:
                         self.variants[this_type][str(new_seqvar)] = new_seqvar
 
@@ -135,10 +184,10 @@ class VariantLVG(object):
         if self.seqvar.type == 'g' and self.transcripts:
             # we still need to collect 'c' and 'n' variants
             for trans in self.transcripts:
-                var_c = _seqvar_to_seqvar(self.seqvar, 'g', 'c', trans)
+                var_c = _seqvar_to_seqvar(self.seqvar, 'g', 'c', trans, maxlen=seqvar_max_len)
                 if var_c:
                     self.variants['c'][str(var_c)] = var_c
-                var_n = _seqvar_to_seqvar(self.seqvar, 'g', 'n', trans)
+                var_n = _seqvar_to_seqvar(self.seqvar, 'g', 'n', trans, maxlen=seqvar_max_len)
                 if var_n:
                     self.variants['n'][str(var_n)] = var_n
 
@@ -148,18 +197,18 @@ class VariantLVG(object):
                 for var_g in list(self.variants['g'].values()):
                     # Find all available 'c'
                     if not trans.startswith('NR'):
-                        var_c = _seqvar_to_seqvar(var_g, 'g', 'c', trans)
+                        var_c = _seqvar_to_seqvar(var_g, 'g', 'c', trans, maxlen=seqvar_max_len)
                         if var_c:
                             self.variants['c'][str(var_c)] = var_c
 
                     # Find all available 'n'
-                    var_n = _seqvar_to_seqvar(var_g, 'g', 'n', trans)
+                    var_n = _seqvar_to_seqvar(var_g, 'g', 'n', trans, maxlen=seqvar_max_len)
                     if var_n:
                         self.variants['n'][str(var_n)] = var_n
 
         # map all newly found 'c' to 'p'
         for var_c in list(self.variants['c'].values()):
-            new_seqvar = _seqvar_to_seqvar(var_c, 'c', 'p')
+            new_seqvar = _seqvar_to_seqvar(var_c, 'c', 'p', maxlen=seqvar_max_len)
             if new_seqvar:
                 self.variants['p'][str(new_seqvar)] = new_seqvar
 

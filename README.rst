@@ -6,7 +6,7 @@ Python toolkit for parsing HGVS strings describing genetic variants (mutations)
 into components and generating lexical synonyms of these descriptors.
 
 Requirements
-------------
+============
 
 You'll need a UNIX-like environment to use this package. Both OS X and Linux have been confirmed to work.
 
@@ -48,7 +48,7 @@ Install ipython via pypi:
 More installation options and instructions are available on `the iPython installation page <http://ipython.org/ipython-doc/stable/install/install.html>`_.
 
 Variant: shortcut to SequenceVariant
-------------------------------------
+====================================
 
 `Variant` is an API shortcut to instantiating a SequenceVariant object from an HGVS string. It accepts
 both gene-name-bearing and non-gene-name-bearing HGVS strings. 
@@ -75,7 +75,7 @@ the "metavariant" logger at INFO level for information.)
 
 
 VariantLVG: Lexical Variant Generation
---------------------------------------
+======================================
 
 `VariantLVG` takes an hgvs.SequenceVariant object or a plain HGVS string and uses the Universal Transcript
 Archive (UTA) to find as many related transcripts and sequence variants as possible that could be used as
@@ -95,29 +95,50 @@ Usage example:
   print(lex.transcripts)
   print(lex.gene_name)
 
-Attributes::
+Enrichment
+----------
 
-  hgvs_text: original hgvs string from instantiation
-  seqvar: original SequenceVariant from instantiation
-  transcripts: list of strings indicating related transcripts
-  variants: 2-level dictionary of shape { seqtype: { hgvs_text: seqvar } }
+VariantLVG provides for "enrichment" of lexical variant generation by allowing
+more transcripts and variations to be supplied at instantiation. Just use the 
+appropriate keyword for the type of information, remembering that the "enrichment"
+keyword arguments are all lists.
 
-Properties::
+Keyword Arguments
+-----------------
 
-  gene_name: returns HUGO gene-name if it can be ascertained using UTA. (Lazy-loaded attribute _gene_name.)
-  hgvs_c: returns flat list of c.DNA hgvs strings from variants
-  hgvs_g: returns flat list of g.DNA hgvs strings from variants
-  hgvs_n: returns flat list of n.RNA hgvs strings from variants 
-  hgvs_p: returns flat list of protein hgvs strings from variants
-  seqvars: returns flat list of SequenceVariant objects from variants
+- transcripts (list): list of strings describing valid alternative transcripts for seqvar
+- seqvar_max_len (int): restrict posedit lengths to this number of characters (or fewer).  
+- hgvs_c (list): see Enrichment above
+- hgvs_g (list): see Enrichment above
+- hgvs_n (list): see Enrichment above
+- hgvs_p (list): see Enrichment above
 
-Methods::
+Attributes
+----------
 
-  to_dict(): returns non-underscored attributes (seqvar, hgvs_text, transcripts, seqvars) as dictionary
+- hgvs_text: original hgvs string from instantiation
+- seqvar: original SequenceVariant from instantiation
+- transcripts: list of strings indicating related transcripts
+- variants: 2-level dictionary of shape { seqtype: { hgvs_text: seqvar } }
+
+Properties
+----------
+
++ gene_name: returns HUGO gene-name if it can be ascertained using UTA. (Lazy-loaded attribute _gene_name.)
++ hgvs_c: returns flat list of c.DNA hgvs strings from variants
++ hgvs_g: returns flat list of g.DNA hgvs strings from variants
++ hgvs_n: returns flat list of n.RNA hgvs strings from variants 
++ hgvs_p: returns flat list of protein hgvs strings from variants
++ seqvars: returns flat list of SequenceVariant objects from variants
+
+Methods
+-------
+
++ to_dict(): returns non-underscored attributes (seqvar, hgvs_text, transcripts, seqvars) as dictionary
   
 
 VariantComponents: Parsing and "Slang"
---------------------------------------
+======================================
 
 `VariantComponents` allows instantiation in two different ways: using an hgvs.SequenceVariant object
 and using a set of components as keyword arguments.
@@ -148,7 +169,7 @@ A VariantComponents object provides access to the following attributes and prope
 
 
 Exceptions
-----------
+==========
 
 All exceptions can be found and imported from metavariant.exceptions.
 
@@ -158,7 +179,7 @@ All exceptions can be found and imported from metavariant.exceptions.
 
 
 Setting UTA Server
-------------------
+==================
 
 When you find yourself outgrowing the public UTA server, you may want to install your own UTA server. 
 The instructions can be found on the [biocommons/uta repository README](https://bitbucket.org/biocommons/uta). Both "installing from database dumps" 
@@ -183,7 +204,7 @@ You may have to do more postgres administration to get your preferred configurat
 
 
 Support and Maintenance
------------------------
+=======================
 
 This library was developed in-house at Text2Gene, LLC.
 

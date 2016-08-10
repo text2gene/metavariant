@@ -3,3 +3,4 @@
 0.0.2.1, 6/17/2016 -- made strip_gene_name_from_hgvs_text a standalone function.
 0.0.2.4, 7/6/2016 -- tweaks allowing more environment-based configuration of UTA connection.
 0.0.3, 7/24/2016 -- LOVDVariantsForGene and LOVDAnnotatedVariants debut (lovd.py added).
+0.0.3.1, 8/10/2016 -- VariantLVG takes `seqvar_max_len` kwarg to keep stupid-long posedits out of the results.

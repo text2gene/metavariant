@@ -4,6 +4,8 @@ import unittest
 from metavariant import VariantLVG
 from metavariant.exceptions import CriticalHgvsError
 
+SEQVAR_MAX_LEN_SAMPLE = 'NM_001204.6:c.51_814del'
+
 class TestVariantLVG(unittest.TestCase):
 
     def setUp(self):
@@ -18,7 +20,6 @@ class TestVariantLVG(unittest.TestCase):
 
         expected_c = [
                 "NM_005228.3:c.2240_2257del18",
-                "NM_005228.3:c.2240_2257delTAAGAGAAGCAACATCTC"
                 ]
         expected_g = 'NC_000007.13:g.55242470_55242487delTAAGAGAAGCAACATCTC'
         expected_p = 'NP_005219.2:p.(Leu747_Pro753delinsSer)'
@@ -45,4 +46,14 @@ class TestVariantLVG(unittest.TestCase):
         hgvs_text = 'NM_000548.3:c.826_827del'
         lex = VariantLVG(hgvs_text)
         assert lex.gene_name == 'TSC2'
+
+    def test_seqvar_max_len_100(self):
+        lex = VariantLVG(SEQVAR_MAX_LEN_SAMPLE, seqvar_max_len=100)
+        for seqvar in lex.seqvars:
+            assert len('%s' % seqvar) <= 100
+
+    def test_seqvar_max_len_255(self):
+        lex = VariantLVG(SEQVAR_MAX_LEN_SAMPLE, seqvar_max_len=255)
+        for seqvar in lex.seqvars:
+            assert len('%s' % seqvar) <= 255
 
