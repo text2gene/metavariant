@@ -4,3 +4,4 @@
 0.0.2.4, 7/6/2016 -- tweaks allowing more environment-based configuration of UTA connection.
 0.0.3, 7/24/2016 -- LOVDVariantsForGene and LOVDAnnotatedVariants debut (lovd.py added).
 0.0.3.1, 8/10/2016 -- VariantLVG takes `seqvar_max_len` kwarg to keep stupid-long posedits out of the results.
+0.0.3.2, 8/12/2016 -- prevent RejectedSeqVar from being raised while checking posedit length.

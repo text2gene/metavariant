@@ -9,7 +9,7 @@ from hgvs.exceptions import HGVSDataNotAvailableError, HGVSParseError
 
 from .components import VariantComponents
 from .config import get_uta_connection, PKGNAME
-from .exceptions import CriticalHgvsError
+from .exceptions import CriticalHgvsError, RejectedSeqVar
 from .utils import strip_gene_name_from_hgvs_text
 
 log = logging.getLogger(PKGNAME)
@@ -101,8 +101,12 @@ def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None, maxlen=None)
         return None
 
     # if sequence variant maps out to longer than maxlen chars, return None
-    if maxlen and seqvar_length(result_seqvar) > maxlen:
-        return None
+    try:
+        if maxlen and seqvar_length(result_seqvar) > maxlen:
+            return None
+    except RejectedSeqVar:
+        # generally, a "rejected" seqvar is a protein with an empty edit, which is OK to keep.
+        pass
 
     return result_seqvar
 
