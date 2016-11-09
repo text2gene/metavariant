@@ -21,7 +21,7 @@ class TestVariantLVG(unittest.TestCase):
         expected_c = [
                 "NM_005228.3:c.2240_2257del18",
                 ]
-        expected_g = 'NC_000007.13:g.55242470_55242487delTAAGAGAAGCAACATCTC'
+        expected_g = 'NC_000007.14:g.55174777_55174794delTAAGAGAAGCAACATCTC'
         expected_p = 'NP_005219.2:p.(Leu747_Pro753delinsSer)'
         expected_n = 'NM_005228.3:n.2486_2503delTAAGAGAAGCAACATCTC'
 

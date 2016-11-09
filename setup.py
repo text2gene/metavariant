@@ -14,7 +14,7 @@ class build_ext(_build_ext):
 
 setup (
     name = 'metavariant',
-    version = '0.0.3.2',
+    version = '0.0.4',
     description = 'a lexical manipulation toolkit for genetic variant descriptors (hgvs, etc)',
     author = 'Naomi Most',
     maintainer = 'Naomi Most',

@@ -1,19 +1,12 @@
 from __future__ import print_function, unicode_literals
 
 import logging
+import re
 
 from .config import PKGNAME
 from .exceptions import RejectedSeqVar
 
 log = logging.getLogger(PKGNAME)
-
-def lowercase_all_the_keys(some_dict):
-    """ lowercases all the keys in the supplied dictionary.
-
-    :param: dict
-    :return: dict
-    """
-    return dict((key.lower(), val) for key, val in some_dict.iteritems())
 
 amino_acid_map = { 'Ala': 'A',
                    'Arg': 'R',
@@ -43,6 +36,52 @@ dna_nucleotides = ['A','C','T','G']
 official_to_slang_map = {'>': ['->', '-->', '/'],
                          'Ter': ['*', 'X'],
                         }
+
+re_aminochange_long = re.compile('(?P<aminochange>\(?[A-Za-z]{3}\d+[A-Za-z]{3}\)?)')
+re_aminochange_short = re.compile('(?P<aminochange>[{short_as}]\d+[{short_as}]\)?)'.format(short_as=''.join(amino_acid_map.values())))
+
+re_aminochange_comp_long = re.compile('\(?(?P<ref>[A-Za-z]{3})(?P<pos>\d+)(?P<alt>[A-Za-z]{3})\)?')
+re_aminochange_comp_short = re.compile('(?P<ref>[{short_as}])(?P<pos>\d+)(?P<alt>[{short_as}])'.format(short_as=''.join(amino_acid_map.values())))
+
+
+def findall_aminochanges_in_text(text):
+    """ Returns a LIST of all strings that appear to be amino acid change descriptions,
+    e.g.: ['(Cys344Tyr)', 'C344Y', 'Cys344Tyr']
+
+    If amino change is in parenthesis, this function returns a string with parenthesis removed.
+
+    :param text: (str)
+    :return: (list)
+    """
+    longs = re_aminochange_long.findall(text)
+    shorts = re_aminochange_short.findall(text)
+    return longs + shorts
+
+def parse_components_from_aminochange(aminochange):
+    """ Returns a dictionary containing (if possible) 'ref', 'pos', and 'alt'
+    characteristics of the supplied aminochange string.
+
+    If aminochange does not parse, returns None.
+
+    :param aminochange: (str) describing amino acid change
+    :return: dict or None
+    """
+    match = re_aminochange_comp_long.match(aminochange)
+    if not match:
+        match = re_aminochange_comp_short.match(aminochange)
+    
+    if match:
+        return match.groupdict()
+    return None
+
+def lowercase_all_the_keys(some_dict):
+    """ lowercases all the keys in the supplied dictionary.
+
+    :param: dict
+    :return: dict
+    """
+    return dict((key.lower(), val) for key, val in some_dict.iteritems())
+
 
 class VariantComponents(object):
     """
@@ -80,13 +119,28 @@ class VariantComponents(object):
         comp = VariantComponents(seqtype='c', edittype='SUB', pos='128', ref='C', alt='T')
     """
 
-    def __init__(self, seqvar=None, **kwargs):
+    def __init__(self, seqvar=None, aminochange='', **kwargs):
         kwargs = lowercase_all_the_keys(kwargs)
 
         self.seqvar = seqvar
         if self.seqvar:
             self.seqtype, self.edittype, self.ref, self.pos, self.alt = self.parse(seqvar)
             #TODO: get FS_Pos and DupX out of seqvar when applicable.
+            self.fs_pos = ''
+            self.dupx = ''
+
+        elif aminochange:
+            # parse Ref, Pos, Alt from string 
+            aminodict = parse_components_from_aminochange(aminochange)
+            if aminodict:
+                self.__dict__.update(aminodict)
+            else:
+                raise RejectedSeqVar('Could not parse aminochange string "%s" into components' % aminochange)
+            self.seqtype = 'p'
+            self.edittype = ''
+            self.fs_pos = ''
+            self.dupx = ''
+
         else:
             # names of keywords match capitalization used in MySQL m2p_* tables in pubtatordb
             self.seqtype = kwargs.get('seqtype', '').strip()
@@ -103,8 +157,6 @@ class VariantComponents(object):
 
         if not self.seqtype:
             self.seqtype = self._infer_seqtype()
-
-        #TODO: (attempt to) construct a seqvar if instantiated from kwargs.
 
     def _infer_seqtype(self):
         # If SeqType is none and REF in [u] or ALT in [u] --> then RNA
@@ -192,7 +244,11 @@ class VariantComponents(object):
     @property
     def posedit(self):
         """ Returns the official lexeme representing this variant's position and edit information. """
-        return '%s' % self.seqvar.posedit
+        if self.seqvar:
+            return '%s' % self.seqvar.posedit
+        elif self.seqtype == 'p':
+            # i.e. if we instantiated with the aminochange string
+            return '{a.ref}{a.pos}{a.alt}'.format(a=self)
 
     def _posedit_slang_protein(self):
         out = set()
@@ -206,6 +262,7 @@ class VariantComponents(object):
         else:
             # e.g. Lys2569Gly produces "K2569G"
             out.add('%s%s%s' % (self.ref, self.pos, self.alt))
+            out.add('%s%s%s' % (amino_acid_map[self.ref], self.pos, amino_acid_map[self.alt]))
         return list(out)
 
     def _posedit_slang_SUB(self):

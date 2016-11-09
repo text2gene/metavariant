@@ -305,6 +305,19 @@ class VariantLVG(object):
 
         return outd
 
+    def to_json(self):
+        """ Returns a JSON representation of this object, one that can be used to 
+        instantiate this object again using the "from_json" class method.
+
+        :return: (str) json repr
+        """
+        outd = self.to_dict()
+        outd['hgvs_c'] = self.hgvs_c
+        outd['hgvs_p'] = self.hgvs_p
+        outd['hgvs_g'] = self.hgvs_g
+        outd['hgvs_n'] = self.hgvs_n
+        return json.dumps(outd)
+
     def __str__(self):
         out = 'HGVS input: %s\n' % self.hgvs_text
         out += '%r' % self.seqvar
