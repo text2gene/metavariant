@@ -30,6 +30,30 @@ amino_acid_map = { 'Ala': 'A',
                    'Val': 'V',
                  }
 
+# ... https://pypi.python.org/pypi/bidict/ ...?
+amino_acid_map_reverse = { 'A': 'Ala',
+                           'R': 'Arg',
+                           'N': 'Asn',
+                           'D': 'Asp',
+                           'C': 'Cys',
+                           'E': 'Glu',
+                           'Q': 'Gln',
+                           'G': 'Gly',
+                           'H': 'His',
+                           'I': 'Ile',
+                           'L': 'Leu',
+                           'K': 'Lys',
+                           'M': 'Met',
+                           'F': 'Phe',
+                           'P': 'Pro',
+                           'S': 'Ser',
+                           'T': 'Thr',
+                           'W': 'Trp',
+                           'Y': 'Tyr',
+                           'V': 'Val',
+                         }
+
+
 dna_nucleotides = ['A','C','T','G']
 #rna_nucleotides = ['A','C','U','G']
 
@@ -248,7 +272,11 @@ class VariantComponents(object):
             return '%s' % self.seqvar.posedit
         elif self.seqtype == 'p':
             # i.e. if we instantiated with the aminochange string
-            return '{a.ref}{a.pos}{a.alt}'.format(a=self)
+            ref = amino_acid_map_reverse[self.ref]  
+            pos = amino_acid_map_reverse[self.pos]
+            alt = amino_acid_map_reverse[self.alt]  
+
+            return '%s%s%s' % (ref, pos, alt)
 
     def _posedit_slang_protein(self):
         out = set()
@@ -262,7 +290,6 @@ class VariantComponents(object):
         else:
             # e.g. Lys2569Gly produces "K2569G"
             out.add('%s%s%s' % (self.ref, self.pos, self.alt))
-            out.add('%s%s%s' % (amino_acid_map[self.ref], self.pos, amino_acid_map[self.alt]))
         return list(out)
 
     def _posedit_slang_SUB(self):
