@@ -135,7 +135,8 @@ Methods
 -------
 
 + to_dict(): returns non-underscored attributes (seqvar, hgvs_text, transcripts, seqvars) as dictionary
-  
++ to_json(): returns a serialized JSON string representation of the object which can be used to instantiate this LVG again.
++ from_json(json_str): takes serialized JSON representation of this object and rebuilds LVG from its details.
 
 VariantComponents: Parsing and "Slang"
 ======================================
@@ -150,6 +151,13 @@ Usage starting from a SequenceVariant object::
 Usage starting from individual components::
 
     comp = VariantComponents(seqtype='c', edittype='SUB', pos='322', ref='C', alt='T')
+
+Usage starting from "aminochange" string::
+
+    comp = VariantComponents(aminochange='V777A')
+    comp = VariantComponents(aminochange='Leu653Gly')
+
+(If starting with "aminochange" string, the `seqvar` and `edittype` attributes will be None.)
 
 If no seqtype is supplied, VariantComponents tries to infer the sequence type heuristically (e.g. the presence
 of a "U" in the ref or the alt implies this is an RNA string).
