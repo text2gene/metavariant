@@ -1,6 +1,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import re
+import json
 import logging
 
 import hgvs.parser
@@ -132,16 +133,18 @@ class VariantLVG(object):
             hgvs_g (list): ""
             hgvs_n (list): ""
             hgvs_p (list): ""
+            gene_name: accepts any string as gene name (should be HGNC)
             transcripts (list): list of strings describing valid alternative transcripts for seqvar
             seqvar_max_len (int): restrict posedit lengths to this number of characters (or fewer).    
         """
 
         self.hgvs_text = strip_gene_name_from_hgvs_text('%s' % hgvs_text_or_seqvar)
+        self.seqvar = self.parse(hgvs_text_or_seqvar)
+
+        self._gene_name = kwargs.get('gene_name', None)
 
         seqvar_max_len = kwargs.get('seqvar_max_len', None)
 
-        # use the hgvs library to get us some info about this HGVS string.
-        self.seqvar = self.parse(hgvs_text_or_seqvar)
 
         if self.seqvar is None:
             raise CriticalHgvsError('Cannot create SequenceVariant from input %s (see hgvs_lexicon log)' % hgvs_text_or_seqvar)
@@ -215,9 +218,6 @@ class VariantLVG(object):
             new_seqvar = _seqvar_to_seqvar(var_c, 'c', 'p', maxlen=seqvar_max_len)
             if new_seqvar:
                 self.variants['p'][str(new_seqvar)] = new_seqvar
-
-        # find out the gene name of this variant.
-        self._gene_name = None
 
     @property
     def gene_name(self):
@@ -305,18 +305,45 @@ class VariantLVG(object):
 
         return outd
 
+    def _simple_dict(self):
+        return {'gene_name': self.gene_name,
+                'hgvs_c': self.hgvs_c,
+                'hgvs_g': self.hgvs_g,
+                'hgvs_n': self.hgvs_n,
+                'hgvs_p': self.hgvs_p,
+                'hgvs_text': self.hgvs_text,
+                'transcripts': list(self.transcripts),
+               }
+
     def to_json(self):
         """ Returns a JSON representation of this object, one that can be used to 
         instantiate this object again using the "from_json" class method.
 
         :return: (str) json repr
         """
-        outd = self.to_dict()
-        outd['hgvs_c'] = self.hgvs_c
-        outd['hgvs_p'] = self.hgvs_p
-        outd['hgvs_g'] = self.hgvs_g
-        outd['hgvs_n'] = self.hgvs_n
-        return json.dumps(outd)
+        return json.dumps(self._simple_dict())
+
+    @classmethod
+    def from_json(cls, json_str):
+        """ Allows instantiation of VariantLVG object from pre-established values 
+        set in a JSON data structure.  The structure is as follows:
+                
+                {
+                'hgvs_text': <hgvs_text>,
+                'gene_name': <gene_name>,
+                'hgvs_c': [hgvs_c1,hgvs_c2...],
+                'hgvs_g': [hgvs_g1,hgvs_g2...],
+                'hgvs_n': [hgvs_n1,hgvs_n2...],
+                'hgvs_p': [hgvs_p1,hgvs_p2...],
+                'transcripts': [<transcript1>,<transcript2>...]
+               }
+
+        At least hgvs_text must be set.
+        """
+        inpd = json.loads(json_str)
+        hgvs_text = inpd.pop('hgvs_text')
+
+        return cls(hgvs_text, **inpd)
 
     def __str__(self):
         out = 'HGVS input: %s\n' % self.hgvs_text

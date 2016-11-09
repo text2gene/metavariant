@@ -57,3 +57,28 @@ class TestVariantLVG(unittest.TestCase):
         for seqvar in lex.seqvars:
             assert len('%s' % seqvar) <= 255
 
+    def test_to_json(self):
+        lex = VariantLVG('NM_000020.2(ACVRL1):c.1031G>A')
+        json_result = lex.to_json()
+        assert 'NM_000020.2:c.1031G>A' in json_result
+        assert 'NM_001077401.1' in json_result
+        assert 'ACVRL1' in json_result
+
+    def test_from_json(self):
+        json_str = '{"hgvs_text": "NM_005228.3:c.2240_2257del18", "hgvs_n": ["NM_005228.3:n.2486_2503delTAAGAGAAGCAACATCTC"], "gene_name": "EGFR", "transcripts": ["NM_005228.3"], "hgvs_g": ["NC_000007.14:g.55174777_55174794delTAAGAGAAGCAACATCTC"], "hgvs_c": ["NM_005228.3:c.2240_2257del18"]}'
+        lex = VariantLVG.from_json(json_str)
+        assert lex.hgvs_text == 'NM_005228.3:c.2240_2257del18'
+        assert lex.gene_name == 'EGFR'
+        assert 'NC_000007.14:g.55174777_55174794delTAAGAGAAGCAACATCTC' in lex.hgvs_g
+        assert 'NM_005228.3:n.2486_2503delTAAGAGAAGCAACATCTC' in lex.hgvs_n
+
+
+
+lex = VariantLVG("NM_005228.3:c.2240_2257del18")
+
+json_str = lex.to_json()
+print(json_str)
+
+lex = VariantLVG.from_json(json_str)
+
+
