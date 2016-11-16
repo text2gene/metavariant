@@ -91,10 +91,15 @@ def parse_components_from_aminochange(aminochange):
     :return: dict or None
     """
     match = re_aminochange_comp_long.match(aminochange)
-    if not match:
-        match = re_aminochange_comp_short.match(aminochange)
-    
     if match:
+        # reverse long-form amino strings to short-form.
+        stuff = match.groupdict()
+        return {'ref': amino_acid_map[stuff['ref']],
+                'pos': stuff['pos'],
+                'alt': amino_acid_map[stuff['alt']],
+               }
+    else:
+        match = re_aminochange_comp_short.match(aminochange)
         return match.groupdict()
     return None
 
@@ -267,16 +272,16 @@ class VariantComponents(object):
 
     @property
     def posedit(self):
-        """ Returns the official lexeme representing this variant's position and edit information. """
+        """ Returns the canonical lexeme representing this variant's position and edit information. 
+        If this variant represents an amino acid change, the long-form names will be used.
+        """
         if self.seqvar:
             return '%s' % self.seqvar.posedit
         elif self.seqtype == 'p':
             # i.e. if we instantiated with the aminochange string
             ref = amino_acid_map_reverse[self.ref]  
-            pos = amino_acid_map_reverse[self.pos]
             alt = amino_acid_map_reverse[self.alt]  
-
-            return '%s%s%s' % (ref, pos, alt)
+            return '%s%s%s' % (ref, self.pos, alt)
 
     def _posedit_slang_protein(self):
         out = set()
@@ -301,6 +306,8 @@ class VariantComponents(object):
         for slang_symbol in official_to_slang_map['>']:
             out.add(self.posedit.replace('>', slang_symbol))
 
+        # TODO: delins variation (c.114_115delinsA from c.114_115G>A)
+
         # E.g. "C891T"
         out.add(self.ref + self.pos + self.alt)
         return list(out)
@@ -313,16 +320,18 @@ class VariantComponents(object):
         return [self.pos + 'del']
 
     def _posedit_slang_DUP(self):
-        """ Handles the Duplication case for generating posedit slang from Components. """
-        # Examples based on input hgvs_text 'NM_025114.3:c.6869dupA'
-        #
-        # E.g. '6869dup'
+        """ Handles the Duplication case for generating posedit slang from Components. 
+            
+        Example:
+            posedit c.6869dupA --> posedit_slang '689dup'
+        """
         return [self.pos + 'dup']
 
     def _posedit_slang_INDEL(self):
-        """ Handles the Insertion case for generating posedit slang from Components.
+        """ Handles the Insertion-Deletion (aka DELINS) case for generating posedit slang from Components.
 
-        Returns an empty list (no slang terms known).
+        Example:
+            posedit c.112_117delAGGTCAinsTG --> posedit_slang 'c.112_117delinsTG'
         """
         return []
 
