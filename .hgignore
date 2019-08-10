@@ -22,3 +22,4 @@ numpy-*
 *.dump
 *.json
 data/*.txt
+.pytest_cache/
