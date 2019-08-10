@@ -3,6 +3,9 @@ import glob, os
 from setuptools import setup, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 
+
+# error: biopython 1.74 is installed but biopython==1.69 is required by {'hgvs'}
+
 class build_ext(_build_ext):
     # http://stackoverflow.com/questions/21605927/why-doesnt-setup-requires-work-properly-for-numpy/21621493
     def finalize_options(self):
@@ -26,7 +29,7 @@ setup (
     setup_requires = ['setuptools', 'numpy'],
     install_requires = [
         'numpy',
-        'biopython',
+        #'biopython',  # let uta do this for us
         'uta',
         'hgvs',
         'xmltodict',
