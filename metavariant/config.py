@@ -48,5 +48,8 @@ def get_uta_connection(host=UTA_HOST, port=UTA_PORT, timeout=UTA_TIMEOUT, schema
         return hgvs.dataproviders.uta.connect()
 
     socket.create_connection((host, port), timeout=timeout)
-    return hgvs.dataproviders.uta.connect(uta_cnxn_tmpl.format(host=host, port=port, schema=schema, user=username, pwd=password), pooling=True)
+    try:
+        return hgvs.dataproviders.uta.connect(uta_cnxn_tmpl.format(host=host, port=port, schema=schema, user=username, pwd=password), pooling=True)
+    except:
+        from IPython import embed; embed()
 

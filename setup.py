@@ -4,8 +4,6 @@ from setuptools import setup, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 
 
-# error: biopython 1.74 is installed but biopython==1.69 is required by {'hgvs'}
-
 class build_ext(_build_ext):
     # http://stackoverflow.com/questions/21605927/why-doesnt-setup-requires-work-properly-for-numpy/21621493
     def finalize_options(self):
@@ -17,7 +15,7 @@ class build_ext(_build_ext):
 
 setup (
     name = 'metavariant',
-    version = '0.0.5',
+    version = '0.1.0',
     description = 'a lexical manipulation toolkit for genetic variant descriptors (hgvs, etc)',
     author = 'Naomi Most',
     maintainer = 'Naomi Most',
@@ -29,10 +27,10 @@ setup (
     setup_requires = ['setuptools', 'numpy'],
     install_requires = [
         'numpy',
-        #'biopython',  # let uta do this for us
-        'uta',
-        'hgvs',
+        #'uta',     # let this be installed by hgvs
+        'hgvs>=1.3.0.post0',
         'xmltodict',
+        'pytest',
         ],
     )
 
