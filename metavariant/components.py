@@ -109,7 +109,7 @@ def lowercase_all_the_keys(some_dict):
     :param: dict
     :return: dict
     """
-    return dict((key.lower(), val) for key, val in some_dict.iteritems())
+    return dict((key.lower(), val) for key, val in some_dict.items())
 
 
 class VariantComponents(object):

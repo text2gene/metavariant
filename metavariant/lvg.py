@@ -5,7 +5,7 @@ import json
 import logging
 
 import hgvs.parser
-import hgvs.variantmapper
+import hgvs.assemblymapper 
 from hgvs.exceptions import HGVSDataNotAvailableError, HGVSParseError
 
 from .components import VariantComponents
@@ -17,7 +17,7 @@ log = logging.getLogger(PKGNAME)
 
 # === UTA Connection setup. === #
 uta = get_uta_connection()
-mapper = hgvs.variantmapper.EasyVariantMapper(uta)
+mapper = hgvs.assemblymapper.AssemblyMapper(uta)
 hgvs_parser = hgvs.parser.Parser()
 
 
@@ -115,7 +115,7 @@ def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None, maxlen=None)
 class VariantLVG(object):
 
     #TODO: remove these two class variables (when ready)...
-    VERSION = '0.0.2'
+    VERSION = '0.0.3'
     LVG_MODE = 'lvg'
 
     def __init__(self, hgvs_text_or_seqvar, **kwargs):
@@ -128,12 +128,16 @@ class VariantLVG(object):
             appropriate keyword for the type of information, remembering that the "enrichment"
             keyword arguments are all lists.
 
+        Example:
+
+            VariantLVG('some_hgvs_text', gene_name='GWAR', hgvs_g=['relataed_hgvs_g'], transcripts=['19058.5', '101101.3'])
+
         Keywords:
             hgvs_c (list): see Enrichment above
             hgvs_g (list): ""
             hgvs_n (list): ""
             hgvs_p (list): ""
-            gene_name: accepts any string as gene name (should be HGNC)
+            gene_name: accepts any string as gene name (should be HGNC standardized)
             transcripts (list): list of strings describing valid alternative transcripts for seqvar
             seqvar_max_len (int): restrict posedit lengths to this number of characters (or fewer).    
         """
@@ -223,7 +227,13 @@ class VariantLVG(object):
     def gene_name(self):
         """ Lazy-loaded gene name based on hgvs lookup. """
         if self._gene_name is None:
-            for seqvar in self.variants['c'].values() + self.variants['n'].values() + self.variants['p'].values():
+            # Aggregate all our SequenceVariant objects into a single list.
+            seqvars = list(self.variants['c'].values())
+            seqvars.extend(list(self.variants['n'].values()))
+            seqvars.extend(list(self.variants['p'].values()))
+            
+            # try each seqvar; take the first gene name that appears, and stop there.
+            for seqvar in seqvars:
                 name = variant_to_gene_name(seqvar)
                 if name:
                     self._gene_name = name
@@ -232,6 +242,14 @@ class VariantLVG(object):
 
     @staticmethod
     def get_transcripts(var_g):
+        """Supply a Genomic variant (var_g) to find its related transcripts.
+        
+        Be Aware: this uses Assembly GRCh38.
+
+        :param var_g: (str)
+        :returns: list of transcripts associated with this variant.
+        """
+        #TODO: Allow passing 'assembly' as keyword to change assembly.
         return mapper.relevant_transcripts(var_g)
 
     @staticmethod
@@ -244,7 +262,7 @@ class VariantLVG(object):
         :param hgvs_text_or_seqvar: string or SequenceVariant object
         :return: SequenceVariant object
         """
-        if type(hgvs_text_or_seqvar) == hgvs.variant.SequenceVariant:
+        if type(hgvs_text_or_seqvar) == hgvs.sequencevariant.SequenceVariant:
             return hgvs_text_or_seqvar
 
         hgvs_text = strip_gene_name_from_hgvs_text(hgvs_text_or_seqvar)
@@ -260,19 +278,19 @@ class VariantLVG(object):
 
     @property
     def hgvs_c(self):
-        return self.variants['c'].keys()
+        return list(self.variants['c'].keys())
 
     @property
     def hgvs_g(self):
-        return self.variants['g'].keys()
+        return list(self.variants['g'].keys())
 
     @property
     def hgvs_p(self):
-        return self.variants['p'].keys()
+        return list(self.variants['p'].keys())
 
     @property
     def hgvs_n(self):
-        return self.variants['n'].keys()
+        return list(self.variants['n'].keys())
 
     @property
     def seqvars(self):
@@ -321,7 +339,8 @@ class VariantLVG(object):
 
         :return: (str) json repr
         """
-        return json.dumps(self._simple_dict())
+        outd = self._simple_dict()
+        return json.dumps(outd)
 
     @classmethod
     def from_json(cls, json_str):
