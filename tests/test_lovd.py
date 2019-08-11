@@ -2,7 +2,7 @@ import unittest
 
 from metavariant import LOVDVariantsForGene
 
-class TestLOVD(unittest.TestCase)
+class TestLOVD(unittest.TestCase):
 
     def test_workingness_of_LOVDVariantsForGene(self):
         # too experimental to trust results yet.

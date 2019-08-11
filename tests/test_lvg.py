@@ -19,18 +19,18 @@ class TestVariantLVG(unittest.TestCase):
         lex = VariantLVG(hgvs_text)
 
         expected_c = [
-                "NM_005228.3:c.2240_2257del18",
+                "NM_005228.3:c.2240_2257del",
                 ]
-        expected_g = 'NC_000007.14:g.55174777_55174794delTAAGAGAAGCAACATCTC'
+        expected_g = 'NC_000007.14:g.55174777_55174794del'      # same: 'NC_000007.14:g.55174777_55174794delTAAGAGAAGCAACATCTC'
         expected_p = 'NP_005219.2:p.(Leu747_Pro753delinsSer)'
-        expected_n = 'NM_005228.3:n.2486_2503delTAAGAGAAGCAACATCTC'
+        expected_n = 'NM_005228.3:n.2486_2503del'               # same: 'NM_005228.3:n.2486_2503delTAAGAGAAGCAACATCTC'
 
         for c_hgvs_text in expected_c:
             assert c_hgvs_text in lex.hgvs_c
 
         assert expected_g in lex.hgvs_g
-        assert expected_n in lex.hgvs_n
         assert expected_p in lex.hgvs_p
+        assert expected_n in lex.hgvs_n
     
     def test_plain_lvgno_variant_mappings(self):
         #TODO
