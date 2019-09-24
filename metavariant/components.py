@@ -1,4 +1,4 @@
-from __future__ import print_function, unicode_literals
+""" Provides VariantComponents objects and functions for detecting Amino component strings. """
 
 import logging
 import re

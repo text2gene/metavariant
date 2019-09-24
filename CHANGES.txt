@@ -7,3 +7,4 @@
 0.0.3.2, 8/12/2016 -- prevent RejectedSeqVar from being raised while checking posedit length.
 0.0.4, 11/8/2016 -- new feature: aminochange. Allows VariantComponents(aminochange=<amino acid change string>). Improvements to protein slang generation.
 0.1.0, 8/10/2019 -- py3k updates, rectification against hgvs library changes. Breaks py2k support!
+0.1.3, 9/24/2019 -- Fixes most deprecation warnings. Updates default UTA schema to 20171026.

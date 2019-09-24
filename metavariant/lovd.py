@@ -1,4 +1,4 @@
-from __future__ import absolute_import, print_function, unicode_literals
+"""Supplies LOVDVariant object for exploring LOVD databases. (BETA)"""
 
 import sys, re
 

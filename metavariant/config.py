@@ -1,4 +1,4 @@
-from __future__ import absolute_import, unicode_literals
+"""Handles env variable configuration usage and sets up UTA connection."""
 
 import os, socket
 from configparser import ConfigParser

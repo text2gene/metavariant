@@ -1,4 +1,4 @@
-from __future__ import absolute_import, unicode_literals
+"""Known HGVS samples for testing."""
 
 supported_edittypes = ['SUB', 'DEL', 'FS', 'INDEL', 'DUP', 'INS']
 

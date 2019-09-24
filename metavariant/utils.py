@@ -1,6 +1,4 @@
-from __future__ import absolute_import, print_function, unicode_literals
-
-# utils.py contains utility functions that should require few, if any, 3rd party python libraries.
+""" Contains utility functions that require no 3rd party python libraries. """
 
 import re
 

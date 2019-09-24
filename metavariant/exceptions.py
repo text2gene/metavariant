@@ -1,5 +1,4 @@
-from __future__ import absolute_import, unicode_literals
-
+"""Provides metavariant specific exceptions."""
 
 class MetaVariantError(Exception):
     """ Generic exception class from which all metavariant exceptions are subclassed. """

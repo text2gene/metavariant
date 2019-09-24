@@ -15,7 +15,7 @@ class build_ext(_build_ext):
 
 setup (
     name = 'metavariant',
-    version = '0.1.1b',
+    version = '0.1.3',
     description = 'a lexical manipulation toolkit for genetic variant descriptors (hgvs, etc)',
     long_description = open('README.rst').read(),
     long_description_content_type = 'text/x-rst',
