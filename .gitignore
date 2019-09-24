@@ -10,6 +10,9 @@ __pycache__/
 .hg/
 .hgignore
 
+# Vi(m) effluvia
+*.swp
+
 # Distribution / packaging
 .Python
 build/

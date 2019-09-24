@@ -61,11 +61,12 @@ official_to_slang_map = {'>': ['->', '-->', '/'],
                          'Ter': ['*', 'X'],
                         }
 
-re_aminochange_long = re.compile('(?P<aminochange>\(?[A-Za-z]{3}\d+[A-Za-z]{3}\)?)')
-re_aminochange_short = re.compile('(?P<aminochange>[{short_as}]\d+[{short_as}]\)?)'.format(short_as=''.join(amino_acid_map.values())))
+# Match literal backslashes here.
+re_aminochange_long = re.compile('(?P<aminochange>\(?[A-Za-z]{3}[0-9]+[A-Za-z]{3}\)?)')
+re_aminochange_short = re.compile('(?P<aminochange>[{short_as}][0-9]+[{short_as}]?)'.format(short_as=''.join(amino_acid_map.values())))
 
-re_aminochange_comp_long = re.compile('\(?(?P<ref>[A-Za-z]{3})(?P<pos>\d+)(?P<alt>[A-Za-z]{3})\)?')
-re_aminochange_comp_short = re.compile('(?P<ref>[{short_as}])(?P<pos>\d+)(?P<alt>[{short_as}])'.format(short_as=''.join(amino_acid_map.values())))
+re_aminochange_comp_long = re.compile('\(?(?P<ref>[A-Za-z]{3})(?P<pos>[0-9]+)(?P<alt>[A-Za-z]{3})\)?')
+re_aminochange_comp_short = re.compile('(?P<ref>[{short_as}])(?P<pos>[0-9]+)(?P<alt>[{short_as}])'.format(short_as=''.join(amino_acid_map.values())))
 
 
 def findall_aminochanges_in_text(text):
