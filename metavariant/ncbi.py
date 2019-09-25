@@ -1,5 +1,8 @@
 """ Provides NCBIEnrichedLVG object and NCBI Variant report functions. """
 
+import requests
+import urllib
+
 from .lvg import VariantLVG, Variant
 from .exceptions import CriticalHgvsError, NCBIRemoteError  #, MetaVariantException
 from .utils import strip_gene_name_from_hgvs_text
@@ -49,7 +52,7 @@ def get_ncbi_variant_report(hgvs_text):
     :param hgvs_text: ( c.DNA | r.RNA | p.Protein | g.Genomic )
     :return: list containing each dict of parsed results
     """
-    response = requests.get("https://www.ncbi.nlm.nih.gov/projects/SNP/VariantAnalyzer/var_rep.cgi?annot1={}".format(urllib.quote(hgvs_text)))
+    response = requests.get("https://www.ncbi.nlm.nih.gov/projects/SNP/VariantAnalyzer/var_rep.cgi?annot1={}".format(urllib.parse.quote(hgvs_text)))
 
     if 'Error' in response.text:
         error_str = 'The NCBI Variant Report Service returned an error: "{}"\n'.format(response.text)
@@ -105,7 +108,7 @@ class NCBIEnrichedLVG(VariantLVG):
         if self.seqvar is None:
             raise CriticalHgvsError('Cannot create SequenceVariant from input %s' % self.hgvs_text)
         try:
-            report = NCBIReport(self.hgvs_text)
+            report = get_ncbi_variant_report(self.hgvs_text)
             self.variants = ncbi_report_to_variants(report)
         except NCBIRemoteError as error:
             log.debug('Skipping NCBI enrichment; %r' % error)
