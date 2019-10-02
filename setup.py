@@ -15,14 +15,15 @@ class build_ext(_build_ext):
 
 setup (
     name = 'metavariant',
-    version = '0.1.3',
+    version = '0.2.0b',
     description = 'a lexical manipulation toolkit for genetic variant descriptors (hgvs, etc)',
     long_description = open('README.rst').read(),
     long_description_content_type = 'text/x-rst',
+    url = 'https://github.com/text2gene/metavariant',
     author = 'Naomi Most',
     maintainer = 'Naomi Most',
     author_email = 'naomi@nthmost.com',
-    maintainer_email = 'naomi@nthmost.com',
+    maintainer_email = 'naomi@text2gene.com',
     license = 'Apache 2.0',
     packages = find_packages(),
     cmdclass = {'build_ext': build_ext},

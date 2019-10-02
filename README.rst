@@ -53,7 +53,7 @@ Variant: shortcut to SequenceVariant
 `Variant` is an API shortcut to instantiating a SequenceVariant object from an HGVS string. It accepts
 both gene-name-bearing and non-gene-name-bearing HGVS strings. 
 
-See [Human Genome Variation Society](http://www.hgvs.org/) for explanation of HGVS strings.
+See `Human Genome Variation Society <http://www.hgvs.org/>`_ for explanation of HGVS strings.
 
 Examples of valid HGVS strings::
 
@@ -98,10 +98,32 @@ Usage example:
 Enrichment
 ----------
 
-VariantLVG provides for "enrichment" of lexical variant generation by allowing
+`VariantLVG` provides for "enrichment" of lexical variant generation by allowing
 more transcripts and variations to be supplied at instantiation. Just use the 
 appropriate keyword for the type of information, remembering that the "enrichment"
 keyword arguments are all lists.
+
+The done-for-you way of enriching the LVG is by using the `NCBIEnrichedLVG` object.
+
+Usage example:
+
+.. code-block:: python
+
+  hgvs_text = 'NM_198056.2:c.4786T>A'
+  lex = NCBIEnrichedLVG(hgvs_text)
+
+This object takes the first step of asking the NCBI Variant Reporter about the given
+HGVS string to see if the NCBI has any human-curated equivalents already. If so,
+`NCBIEnrichedLVG` uses these variant hgvs strings to feed into the `VariantLVG` process.
+
+The result is an LVG object just like `VariantLVG`, except it probably took an extra
+3-5 seconds to get results. (Hey, the NCBI is federally funded; we just pass that 
+savings down to you.)  The upside is that you might have a more well-featured LVG
+object that covers more lexical variations than you would have otherwise.  Maybe.
+
+*Note: this method will be changing radically in the next minor version (0.3.0) since
+the NCBI Variant Reporter has already been sunsetted in favor of Variation Services.
+See `the NCBI Variation Services page <https://www.ncbi.nlm.nih.gov/variation/services/>`_.*
 
 Keyword Arguments
 -----------------
@@ -185,6 +207,7 @@ All exceptions can be found and imported from metavariant.exceptions.
 
 `RejectedSeqVar`: raised inside VariantComponents when input sequence components fail certain tests of completeness. For example, a protein seqvar will throw this Exception if the protein effect string is only a "?" (i.e. unknown protein effect).  A "SUB" (substitution) will fail the completeness test if an "alt" is not provided in the instantiated components.
 
+`MetaVariantException`: base exception class from which all metavariant package exceptions are subclassed.
 
 Setting UTA Server
 ==================
