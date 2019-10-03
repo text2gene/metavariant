@@ -1,19 +1,22 @@
 import unittest
 
-from metavariant import NCBIEnrichedLVG
-
-test_hgvs_c = 'NM_001232.3:c.919G>C'
-test_hgvs_n = 'NM_194248.2:n.285C>T'
+from metavariant.ncbi import NCBIVariantService, SPDI, HGVS 
+from metavariant.hgvs_samples import hgvs_c, hgvs_g, hgvs_n, hgvs_p, intronic
 
 
-class TestNCBIEnrichedLVG(unittest.TestCase):
+# Tests for SPDI, HGVS, and any others we implement over time.
 
-    def test_NCBIEnrichedLVG(self):
-        # Stub of a test to flesh out over time as we find edge cases and whatnot.
-        lvg = NCBIEnrichedLVG(test_hgvs_c)
-        assert lvg.hgvs_c[0] == test_hgvs_c
-        assert len(lvg.hgvs_g) > 0
+class TestNCBIVariantServices(unittest.TestCase):
 
-        lvg = NCBIEnrichedLVG(test_hgvs_n)
-        assert len(lvg.seqvars) == 1
+    def test_NCBIVariantService_class(self):
+
+        vs = NCBIVariantService()
+
+    def test_SPDI_class(self):
+        spdi = SPDI()
+        assert spdi.endpoint 
+
+    def test_HGVS_class(self):
+        hgvs = HGVS()
+        assert hgvs.endpoint
 

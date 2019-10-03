@@ -1,12 +1,21 @@
 """ Provides NCBIEnrichedLVG object NCBI Variant Services client. """
 
 import requests
-import urllib
+#import urllib
 import time
+import json
 
+from .config import log
 from .lvg import VariantLVG, Variant
 from .exceptions import CriticalHgvsError, NCBIRemoteError  #, MetaVariantException
 from .utils import strip_gene_name_from_hgvs_text
+
+# TODO: allow configuration through .config via env variables.
+NCBI_RETRIES = 1
+NCBI_WAIT_TIME = 1.0
+
+# this URL will probably stay hard-coded here.
+NCBI_VS_API_ROOT = 'https://api.ncbi.nlm.nih.gov/variation/v0/'
 
 # ACKNOWLEDGEMENTS:
 # 
@@ -22,23 +31,31 @@ from .utils import strip_gene_name_from_hgvs_text
 # https://www.biorxiv.org/content/10.1101/537449v3.full
 
 
-def api_request(url, retry=0, wait=.1):
-    """ Generalized function for request via API expecting a JSON return.
+def api_request(url, retry=0, wait=1.0, data=None):
+    """ Generalized function for shipping a GET or POST request via HTTP.
 
     If retry is set to a positive integer, this function recurses for each retry
     until retry decrements to 0.
 
+    POST requests are automatically set when data is set.  You can set data to
+    an empty dictionary if you have no data to send.
+
     :param url: preconstructed URL to request via HTTP
     :param retry: (int) how many times to retry in case of a timeout.
     :param wait: (float) how long in seconds to wait between retries
+    :param data: [default: None] if set, switches to POST method.
     :return: response object (from requests lib) if status_code was 200.
     :raises: NCBIRemoteError
     """
     try:
-        res = requests.get(url)
+        if data is not None:
+            res = requests.post(url, data=data)
+        else:
+            res = requests.get(url)
     except requests.exceptions.Timeout:
         # Maybe set up for a retry, or continue in a retry loop
         if retry > 0:
+            time.sleep(wait)
             return api_request(url, retry-1)
         else:
             raise NCBIRemoteError('Timeout during api_request to %s' % url)
@@ -47,60 +64,102 @@ def api_request(url, retry=0, wait=.1):
         raise NCBIRemoteError('Bad URL / too many redirects: %s' % url)
     except requests.exceptions.RequestException as err:
         # catastrophic error. bail.
-        raise NCBIRemoteError('Oh noes! Error while loading URL {}: {}'.format(url, error))
+        raise NCBIRemoteError('Oh noes! Error while loading URL {}: {}'.format(url, err))
     if (res.status_code == 200):
         return res
     else:
         raise NCBIRemoteError('ERROR {} while loading URL {}'.format(res.status_code, url))
 
 
-class NCBIVariantService(object):
+class NCBIVariationService(object):
     """ Base class for NCBI Variant Services API endpoints. """
 
-    api_rootURL = 'https://api.ncbi.nlm.nih.gov/variation/v0/'
+    _endpoint = None
 
-    def compose_url(self, suffix):
-        return self.api_rootURL + suffix
+    def _compose_url(self, text, suffix=''):
+        """ Composes an API url based on the global NCBI_VS_API_ROOT
+            plus the subclass's class variable _endpoint
+            plus the supplied data query (text)
+            plus any relevant suffix (e.g. 'vcf_fields').
 
-    def fetch(self, url, retry=0):
-        return api_request(url, retry)
+        Raises TypeError if the subclass's _endpoint class variable has not been set.
 
-    def parse(self, data):
-        print(data)
+        :param text: typically the data point being submitted to the _endpoint for query.
+        :param suffix: a qualifier for the _endpoint  [default: '']
+        :return url: composed url suitable for submission via GET or POST
+        :rtype: str
+        :raises: TypeError
+        """
+        #TODO: HTTP encode text.  Use urljoin instead of concats.
+        return NCBI_VS_API_ROOT + self._endpoint + '/' + text + '/' + suffix
 
-    def batch(self, long_list):
-        print(long_list)
+    def _fetch(self, url, retry=NCBI_RETRIES, wait=NCBI_WAIT_TIME):
+        return api_request(url, retry, wait)
+
+    def _fetch_POST(self, url, data, retry=NCBI_RETRIES, wait=NCBI_WAIT_TIME):
+        return api_request(url, retry, wait, data)
 
 
-class SPDIgonzales(NCBIVariantService):
-    """ Handles the SPDI endpoint of the NCBI Variant Services API. """
-    # /spdi/{spdi}/*  [GET]
-    #           contextual, vcf_fields, canonical_representative, all_equivalent_contextual, rsids
+# aka SPDI_Gonzales :-D 
+class SPDI(NCBIVariationService):
+    """ Handles the SPDI endpoint of the NCBI Variant Services API. 
 
-    endpoint = 'spdi'
+    /spdi/{spdi}/*  [GET]
+    * contextual
+    * vcf_fields
+    * canonical_representative
+    * all_equivalent_contextual
+    * rsids
+    """
+    _endpoint = 'spdi'
 
     def contextual(self, spdi, retry=0):
         suffix = 'contextual'
-        url = self.compose_url(spdi, suffix)
-        return self.fetch(url, retry)
+        url = self._compose_url(spdi, suffix)
+        return self._fetch(url, retry)
 
     def vcf_fields(self, spdi, retry=0):
         suffix = 'vcf_fields'
-        url = self.compose_url(spdi, suffix)
-        return self.fetch(url, retry)
+        url = self._compose_url(spdi, suffix)
+        return self._fetch(url, retry)
 
-    def 
+    def canonical_representative(self, spdi, retry=0):
+        suffix = 'canonical_representative'
+        url = self._compose_url(spdi, suffix)
+        return self._fetch(url, retry)
+
+    def all_equivalent_contextual(self, spdi, retry=0):
+        suffix = 'all_equivalent_contextual'
+        url = self._compose_url(spdi, suffix)
+        return self._fetch(url, retry) 
+
+    def rsids(self, spdi, retry=0):
+        suffix = 'rsids'
+        url = self._compose_url(spdi, suffix)
+        try:
+            res = self._fetch(url, retry)
+            return json.loads(req.text)['data']['rsids']
+        except NCBIRemoteError as err:
+            log.debug(err)
+            return None
 
 
+class HGVS(NCBIVariationService):
+    # /hgvs/{hgvs}/contextuals  [GET]
+    # /hgvs/batch/contextuals   [POST]
+
+    _endpoint = 'hgvs'
+
+    def contextuals(self, hgvs_text, retry=0):
+        suffix = 'contextuals'
+        url = self._compose_url(hgvs_text, suffix)
+        return self._fetch(url, retry)
+
+    def batch_contextuals(self, data, retry=0):
+        url = self._compose_url('batch', 'contextuals')
+        return self._fetch_POST(url, data, retry)
 
 # endpoints:
-#
-# /spdi/{spdi}/*  [GET]
-#           contextual, vcf_fields, canonical_representative, all_equivalent_contextual, rsids
-#
-#
-# /hgvs/{hgvs}/contextuals  [GET]
-# /hgvs/batch/contextuals   [POST]
 #
 # /vcf/{chrom}/{pos}/{ref}/{alts}/contextuals   [GET]]
 # /vcf/file/set_rsids       [POST]
@@ -108,45 +167,6 @@ class SPDIgonzales(NCBIVariantService):
 # /refsnp/{rsid}            [GET]
 # /
 
-
-
-class NCBIEnrichedLVG(VariantLVG):
-
-    """ Creates a true LVG object by subclassing from VariantLVG and using data drawn from an NCBIReport
-    lookup.  See VariantLVG (from metavariant) for additional documentation.
-
-    Examples:
-        lex = NCBIEnrichedLVG('NM_000249.3:c.1958T>G')
-
-        seqvar = Variant('NM_000249.3:c.1958T>G')
-        lex = NCBIEnrichedLVG(seqvar)
-    """
-
-    VERSION = 2
-    LVG_MODE = 'ncbi_enriched'
-
-    def __init__(self, hgvs_text_or_seqvar, **kwargs):
-        self.hgvs_text = strip_gene_name_from_hgvs_text('%s' % hgvs_text_or_seqvar)
-        self.seqvar = Variant(hgvs_text_or_seqvar)
-        self.ncbierror = None
-        if self.seqvar is None:
-            raise CriticalHgvsError('Cannot create SequenceVariant from input %s' % self.hgvs_text)
-        try:
-            report = get_ncbi_variant_report(self.hgvs_text)
-            self.variants = ncbi_report_to_variants(report)
-        except NCBIRemoteError as error:
-            log.debug('Skipping NCBI enrichment; %r' % error)
-            self.ncbierror = '%r' % error
-            self.error = ''
-            self.variants = {'c': {}, 'g': {}, 'p': {}, 'n': {}}
-            self.variants[self.seqvar.type][self.hgvs_text] = self.seqvar
-
-        super(NCBIEnrichedLVG, self).__init__(self.hgvs_text,
-                                              hgvs_c=self.hgvs_c,
-                                              hgvs_g=self.hgvs_g,
-                                              hgvs_p=self.hgvs_p,
-                                              hgvs_n=self.hgvs_n,
-                                              **kwargs)
 
 # ---- RETURN FORMATS ----
 #
