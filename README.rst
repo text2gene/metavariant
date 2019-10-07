@@ -103,28 +103,6 @@ more transcripts and variations to be supplied at instantiation. Just use the
 appropriate keyword for the type of information, remembering that the "enrichment"
 keyword arguments are all lists.
 
-The done-for-you way of enriching the LVG is by using the `NCBIEnrichedLVG` object.
-
-Usage example:
-
-.. code-block:: python
-
-  hgvs_text = 'NM_198056.2:c.4786T>A'
-  lex = NCBIEnrichedLVG(hgvs_text)
-
-This object takes the first step of asking the NCBI Variant Reporter about the given
-HGVS string to see if the NCBI has any human-curated equivalents already. If so,
-`NCBIEnrichedLVG` uses these variant hgvs strings to feed into the `VariantLVG` process.
-
-The result is an LVG object just like `VariantLVG`, except it probably took an extra
-3-5 seconds to get results. (Hey, the NCBI is federally funded; we just pass that 
-savings down to you.)  The upside is that you might have a more well-featured LVG
-object that covers more lexical variations than you would have otherwise.  Maybe.
-
-*Note: this method will be changing radically in the next minor version (0.3.0) since
-the NCBI Variant Reporter has already been sunsetted in favor of Variation Services.
-See `the NCBI Variation Services page <https://www.ncbi.nlm.nih.gov/variation/services/>`_.*
-
 Keyword Arguments
 -----------------
 
@@ -209,6 +187,8 @@ All exceptions can be found and imported from metavariant.exceptions.
 
 `MetaVariantException`: base exception class from which all metavariant package exceptions are subclassed.
 
+`NCBIRemoteError`: raised when NCBI doesn't respond well to a request. Special characters or improper data will do this.
+
 Setting UTA Server
 ==================
 
@@ -243,7 +223,7 @@ It is provided to the community free of charge by way of the Apache 2.0 License.
 
 You are free to modify it for commercial and non-commercial uses; just don't try to sell it as-is.
 
-Contributions, extensions, bug reports, suggestions, and swear words all happily accepted, 
+Contributions, extensions, pull requests, issues, suggestions, and swear words all happily accepted, 
 in that order.
 
 naomi@text2gene.com
