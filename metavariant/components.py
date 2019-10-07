@@ -220,10 +220,13 @@ class VariantComponents(object):
 
         ref = alt = edittype = pos = ''
 
-        #if seqvar.posedit.edit in ['?', '=']:
-        if hasattr(seqvar.posedit.edit, 'lower'):
-            # if the edit attribute is a str or unicode type thing:
+        if seqvar.posedit is None:
             raise RejectedSeqVar('SequenceVariant missing edit information. (%r)' % seqvar)
+
+            #if seqvar.posedit.edit in ['?', '=']:
+            #if hasattr(seqvar.posedit.edit, 'lower'):
+                # if the edit attribute is a str or unicode type thing:
+            #    raise RejectedSeqVar('SequenceVariant missing edit information. (%r)' % seqvar)
 
         edittype = seqvar.posedit.edit.type.upper()
 
