@@ -114,8 +114,10 @@ def _seqvar_to_seqvar(seqvar, base_type, new_type, transcript=None, maxlen=None)
 
 class VariantLVG(object):
 
-    #TODO: remove these two class variables (when ready)...
-    VERSION = '0.0.3'
+    # version of the Lexical Variant Generation algorithm used in this class.
+    VERSION = '0.1.0'
+
+    # deprecated/legacy use; will be removed by the first major version of metavariant
     LVG_MODE = 'lvg'
 
     def __init__(self, hgvs_text_or_seqvar, **kwargs):

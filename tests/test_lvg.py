@@ -71,7 +71,26 @@ class TestVariantLVG(unittest.TestCase):
         assert lex.gene_name == 'EGFR'
         assert 'NC_000007.14:g.55174777_55174794delTAAGAGAAGCAACATCTC' in lex.hgvs_g
         assert 'NM_005228.3:n.2486_2503delTAAGAGAAGCAACATCTC' in lex.hgvs_n
+        
+    def test_to_and_from_json(self):
+        lex1 = VariantLVG('NM_000020.2(ACVRL1):c.88C>T')
+        dump = lex1.to_json()
+        lex2 = VariantLVG.from_json(dump)
 
+        assert lex1.hgvs_text == lex2.hgvs_text
+        assert lex1.seqvar == lex2.seqvar
+        assert lex1.gene_name == lex2.gene_name
+
+        assert set(lex1.hgvs_g) == set(lex2.hgvs_g)
+        assert set(lex1.hgvs_n) == set(lex2.hgvs_n)
+        assert set(lex1.hgvs_c) == set(lex2.hgvs_c)
+        assert set(lex1.hgvs_p) == set(lex2.hgvs_p)
+    
+        assert len(lex1.seqvars) == len(lex2.seqvars)
+        assert set(lex1.transcripts) == set(lex2.transcripts)
+
+        assert lex1.VERSION == lex2.VERSION
+        
 
 
 lex = VariantLVG("NM_005228.3:c.2240_2257del18")
