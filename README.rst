@@ -226,6 +226,6 @@ You are free to modify it for commercial and non-commercial uses; just don't try
 Contributions, extensions, pull requests, issues, suggestions, and swear words all happily accepted, 
 in that order.
 
-naomi@text2gene.com
-2016 and onwards
+naomi@nthmost.com
+2016-2025 and onwards
 
